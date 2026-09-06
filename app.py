@@ -196,34 +196,28 @@ def main() -> None:
     bappa_b64 = get_bappa_image_base64()
     bappa_img_tag = ""
     if bappa_b64:
-        bappa_img_tag = f"""
-        <div style="flex-shrink: 0;">
-            <img src="data:image/jpeg;base64,{bappa_b64}" 
-                 style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #FFE082; box-shadow: 0 4px 16px rgba(0,0,0,0.35);" 
-                 alt="Ganpati Bappa Morya" />
-        </div>
-        """
+        bappa_img_tag = (
+            '<div style="flex-shrink: 0;">'
+            f'<img src="data:image/jpeg;base64,{bappa_b64}" '
+            'style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #FFE082; box-shadow: 0 4px 16px rgba(0,0,0,0.35);" '
+            'alt="Ganpati Bappa Morya" />'
+            '</div>'
+        )
 
-    st.markdown(
-        f"""
-        <div class="festival-header">
-            <div style="display: flex; align-items: center; justify-content: center; gap: 22px; flex-wrap: wrap; text-align: center;">
-                {bappa_img_tag}
-                <div style="text-align: center;">
-                    <div class="bappa-badge">
-                        🚩 ॥ गणपति बाप्पा मोरया • मंगल मूर्ती मोरया ॥ 🚩
-                    </div>
-                    <h1>🌺 Passiflora Ganesh Festival 2026 🪔</h1>
-                    <p>Community Daily Morning & Evening Aarti Booking Portal • 14th Sep to 25th Sep 2026</p>
-                    <div style="margin-top: 8px; font-size: 1.15rem; color: #FFE082; font-weight: 800; letter-spacing: 0.5px;">
-                        🙏 Ganpati Bappa Morya! Mangal Murti Morya! 🙏
-                    </div>
-                </div>
-            </div>
-        </div>
-        """,
-        unsafe_allow_html=True,
+    header_html = (
+        '<div class="festival-header">'
+        '<div style="display: flex; align-items: center; justify-content: center; gap: 22px; flex-wrap: wrap; text-align: center;">'
+        f'{bappa_img_tag}'
+        '<div style="text-align: center;">'
+        '<div class="bappa-badge">🚩 ॥ गणपति बाप्पा मोरया • मंगल मूर्ती मोरया ॥ 🚩</div>'
+        '<h1 style="color: white !important; font-size: 2.2rem; margin: 0 0 6px 0; font-weight: 800;">🌺 Passiflora Ganesh Festival 2026 🪔</h1>'
+        '<p style="margin: 0; font-size: 1.1rem; color: #FFF3E0; font-weight: 500;">Community Daily Morning & Evening Aarti Booking Portal • 14th Sep to 25th Sep 2026</p>'
+        '<div style="margin-top: 8px; font-size: 1.15rem; color: #FFE082; font-weight: 800; letter-spacing: 0.5px;">🙏 Ganpati Bappa Morya! Mangal Murti Morya! 🙏</div>'
+        '</div>'
+        '</div>'
+        '</div>'
     )
+    st.markdown(header_html, unsafe_allow_html=True)
 
     # Navigation Tabs
     tab_book, tab_cancel, tab_overview, tab_admin = st.tabs([
@@ -252,20 +246,18 @@ def main() -> None:
         selected_day_info = next(d for d in festival_dates if d["date_str"] == selected_date_str)
 
         # Prominent Vedic Tithi Highlight Box
-        st.markdown(
-            f"""
-            <div class="tithi-card">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <span style="font-size: 1.15rem; font-weight: 700; color: #D84315;">🪔 Vedic Tithi: {selected_day_info['tithi']}</span>
-                    <span style="background: #FFE082; color: #5D4037; font-weight: 700; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">Day {selected_day_info['day_number']} of {len(festival_dates)}</span>
-                </div>
-                <p style="margin-top: 6px; margin-bottom: 0; color: #6D4C41; font-size: 0.95rem;">
-                    📅 <strong>{selected_day_info['weekday']}, {selected_day_info['date'].strftime('%d %B %Y')}</strong> • Passiflora Community Ganesh Pandal
-                </p>
-            </div>
-            """,
-            unsafe_allow_html=True,
+        tithi_html = (
+            '<div class="tithi-card">'
+            '<div style="display: flex; justify-content: space-between; align-items: center;">'
+            f'<span style="font-size: 1.15rem; font-weight: 700; color: #D84315;">🪔 Vedic Tithi: {selected_day_info["tithi"]}</span>'
+            f'<span style="background: #FFE082; color: #5D4037; font-weight: 700; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">Day {selected_day_info["day_number"]} of {len(festival_dates)}</span>'
+            '</div>'
+            f'<p style="margin-top: 6px; margin-bottom: 0; color: #6D4C41; font-size: 0.95rem;">'
+            f'📅 <strong>{selected_day_info["weekday"]}, {selected_day_info["date"].strftime("%d %B %Y")}</strong> • Passiflora Community Ganesh Pandal'
+            '</p>'
+            '</div>'
         )
+        st.markdown(tithi_html, unsafe_allow_html=True)
 
         # Get active bookings for this date
         day_bookings = sheets_service.get_bookings_for_date(selected_date_str)
@@ -299,21 +291,19 @@ def main() -> None:
                 if is_booked:
                     flat_num = booking.get("Flat_No", "")
                     resident = booking.get("Resident_Name", "")
-                    st.markdown(
-                        f"""
-                        <div class="slot-card slot-card-booked">
-                            <span class="badge-booked">🔴 BOOKED</span>
-                            <h3 style="margin-top: 10px; margin-bottom: 4px;">{slot_icon} {slot_name}</h3>
-                            <p style="font-size: 1.1rem; font-weight: 600; color: #555; margin-bottom: 8px;">⏰ {slot_time} ({duration} mins)</p>
-                            <div style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #FFCDD2;">
-                                <strong>Reserved by:</strong><br>
-                                🏢 Flat {flat_num}<br>
-                                👤 {resident}
-                            </div>
-                        </div>
-                        """,
-                        unsafe_allow_html=True,
+                    card_html = (
+                        '<div class="slot-card slot-card-booked">'
+                        '<span class="badge-booked">🔴 BOOKED</span>'
+                        f'<h3 style="margin-top: 10px; margin-bottom: 4px;">{slot_icon} {slot_name}</h3>'
+                        f'<p style="font-size: 1.1rem; font-weight: 600; color: #555; margin-bottom: 8px;">⏰ {slot_time} ({duration} mins)</p>'
+                        '<div style="background: white; padding: 10px; border-radius: 6px; border: 1px solid #FFCDD2;">'
+                        '<strong>Reserved by:</strong><br>'
+                        f'🏢 Flat {flat_num}<br>'
+                        f'👤 {resident}'
+                        '</div>'
+                        '</div>'
                     )
+                    st.markdown(card_html, unsafe_allow_html=True)
                     st.button(
                         f"🔒 Unavailable ({slot_time})",
                         key=f"btn_disabled_{idx}_{selected_date_str}",
@@ -321,17 +311,15 @@ def main() -> None:
                         use_container_width=True,
                     )
                 else:
-                    st.markdown(
-                        f"""
-                        <div class="slot-card slot-card-available">
-                            <span class="badge-available">🟢 AVAILABLE</span>
-                            <h3 style="margin-top: 10px; margin-bottom: 4px;">{slot_icon} {slot_name}</h3>
-                            <p style="font-size: 1.1rem; font-weight: 600; color: #2E7D32; margin-bottom: 8px;">⏰ {slot_time} ({duration} mins)</p>
-                            <p style="color: #4CAF50; font-weight: 500; font-size: 0.9rem;">✨ Open for devotee reservation</p>
-                        </div>
-                        """,
-                        unsafe_allow_html=True,
+                    card_html = (
+                        '<div class="slot-card slot-card-available">'
+                        '<span class="badge-available">🟢 AVAILABLE</span>'
+                        f'<h3 style="margin-top: 10px; margin-bottom: 4px;">{slot_icon} {slot_name}</h3>'
+                        f'<p style="font-size: 1.1rem; font-weight: 600; color: #2E7D32; margin-bottom: 8px;">⏰ {slot_time} ({duration} mins)</p>'
+                        '<p style="color: #4CAF50; font-weight: 500; font-size: 0.9rem;">✨ Open for devotee reservation</p>'
+                        '</div>'
                     )
+                    st.markdown(card_html, unsafe_allow_html=True)
 
                     with st.expander(f"👉 Reserve {slot_name} ({slot_time})", expanded=False):
                         with st.form(key=f"form_booking_{idx}_{selected_date_str}"):
@@ -455,26 +443,24 @@ def main() -> None:
                     masked_phone = f"******{c_phone[-4:]}" if len(c_phone) >= 4 else c_phone
 
                     with st.container():
-                        st.markdown(
-                            f"""
-                            <div style="background: white; border: 1px solid #FFCCBC; border-radius: 8px; padding: 18px; margin-bottom: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                                    <h4 style="margin: 0; color: #D84315;">🪔 {c_slot} on {c_date}</h4>
-                                    <span class="badge-booked">Active Booking</span>
-                                </div>
-                                <p style="margin-bottom: 6px; font-size: 1rem;">
-                                    🏢 <strong>Flat:</strong> {c_flat} &nbsp;|&nbsp; 
-                                    👤 <strong>Resident:</strong> {c_name} &nbsp;|&nbsp; 
-                                    📱 <strong>WhatsApp:</strong> {masked_phone}
-                                </p>
-                                <p style="font-size: 0.85rem; color: #757575; margin-bottom: 0;">
-                                    🗓️ <strong>Calendar Event:</strong> {c_gcal or 'Pending Sync'} &nbsp;|&nbsp; 
-                                    🕒 <strong>Booked at:</strong> {c_created}
-                                </p>
-                            </div>
-                            """,
-                            unsafe_allow_html=True,
+                        booking_card_html = (
+                            '<div style="background: white; border: 1px solid #FFCCBC; border-radius: 8px; padding: 18px; margin-bottom: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">'
+                            '<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">'
+                            f'<h4 style="margin: 0; color: #D84315;">🪔 {c_slot} on {c_date}</h4>'
+                            '<span class="badge-booked">Active Booking</span>'
+                            '</div>'
+                            f'<p style="margin-bottom: 6px; font-size: 1rem;">'
+                            f'🏢 <strong>Flat:</strong> {c_flat} &nbsp;|&nbsp; '
+                            f'👤 <strong>Resident:</strong> {c_name} &nbsp;|&nbsp; '
+                            f'📱 <strong>WhatsApp:</strong> {masked_phone}'
+                            '</p>'
+                            f'<p style="font-size: 0.85rem; color: #757575; margin-bottom: 0;">'
+                            f'🗓️ <strong>Calendar Event:</strong> {c_gcal or "Pending Sync"} &nbsp;|&nbsp; '
+                            f'🕒 <strong>Booked at:</strong> {c_created}'
+                            '</p>'
+                            '</div>'
                         )
+                        st.markdown(booking_card_html, unsafe_allow_html=True)
 
                         active_otp = st.session_state.get("cancellation_otp")
                         is_otp_for_this_booking = active_otp and active_otp.get("booking_key") == booking_key
