@@ -145,6 +145,8 @@ class WhatsAppService:
     ) -> Tuple[bool, str]:
         """Send instant booking confirmation message to resident."""
         body = (
+            "🚩 *॥ गणपति बाप्पा मोरया • मंगल मूर्ती मोरया ॥* 🚩\n"
+            "🙏 *Ganpati Bappa Morya!* 🙏\n\n"
             "🌺 *Passiflora Ganesh Festival 2026 - Aarti Booking Confirmed!* 🪔\n\n"
             f"Dear *{resident_name}*,\n"
             f"Your booking for *{slot_time}* on *{date_str}* has been successfully confirmed.\n\n"
@@ -220,7 +222,11 @@ class WhatsAppService:
                 "ADMIN_WHATSAPP_NUMBER is not configured in settings or environment.",
             )
 
-        lines = [f"🌺 *Passiflora Ganesh Festival 2026 - Daily Aarti Schedule ({date_str})*:", ""]
+        lines = [
+            "🚩 *॥ गणपति बाप्पा मोरया • मंगल मूर्ती मोरया ॥* 🚩",
+            f"🌺 *Passiflora Ganesh Festival 2026 - Daily Aarti Schedule ({date_str})*:",
+            "",
+        ]
 
         booked_count = 0
         for item in schedule_items:

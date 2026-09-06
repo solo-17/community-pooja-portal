@@ -1,6 +1,8 @@
 # 🌺 Passiflora Ganesh Festival 2026 - Aarti Booking Portal 🪔
+### 🚩 ॥ गणपति बाप्पा मोरया • मंगल मूर्ती मोरया ॥ 🚩
+**Ganpati Bappa Morya! Mangal Murti Morya!**
 
-A full-stack booking portal built with **Python** and **Streamlit** for the **Passiflora Ganesh Festival 2026** (14th Sep to 25th Sep 2026). No external relational database is required: the system uses **Google Sheets** as the persistent datastore, **Google Calendar** for automated calendar synchronization, **Meta WhatsApp Cloud API** for resident notifications and OTP verification, and **GitHub Actions** for an automated 4:00 AM daily schedule digest.
+A full-stack booking portal built with **Python** and **Streamlit** for the **Passiflora Ganesh Festival 2026** (14th Sep to 25th Sep 2026). Features divine Lord Ganesha imagery, festive branding, and requires no external relational database: the system uses **Google Sheets** as the persistent datastore, **Google Calendar** for automated calendar synchronization, **Meta WhatsApp Cloud API** for resident notifications and OTP verification, and **GitHub Actions** for an automated 4:00 AM daily schedule digest.
 
 ---
 

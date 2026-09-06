@@ -19,6 +19,8 @@ load_dotenv(find_dotenv())
 
 # Festival Branding
 FESTIVAL_NAME = "Passiflora Ganesh Festival 2026"
+FESTIVAL_SLOGAN = "Ganpati Bappa Morya"
+FESTIVAL_CHANT = "॥ गणपति बाप्पा मोरया • मंगल मूर्ती मोरया ॥"
 
 # Default Timezone for Community Festival
 TIMEZONE_STR = "Asia/Kolkata"
