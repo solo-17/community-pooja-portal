@@ -23,6 +23,7 @@ A full-stack booking portal built with **Python** and **Streamlit** for the **Pa
      `[Date, Slot_Time, Flat_No, Resident_Name, Mobile_No, Status="Booked", GCal_Event_ID, Created_At]`
    - Synchronizes event to Admin Google Calendar with rich details.
    - Dispatches instant WhatsApp confirmation message via Meta WhatsApp Cloud API.
+   - **Automated Daily Aarti PDF Poster & Email**: Generates a print-ready A4 celebration poster with Lord Ganesha artwork, Vedic Tithi, devotee family names and flat numbers, and automatically emails it to `avw2951981@gmail.com`.
 
 3. **Secure WhatsApp OTP Cancellation Flow**:
    - Devotees lookup bookings using their Flat Number or WhatsApp Number.

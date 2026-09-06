@@ -20,6 +20,7 @@ import streamlit as st
 
 from services.calendar_service import CalendarService
 from services.config import (
+    DEFAULT_POSTER_EMAIL,
     FESTIVAL_CHANT,
     FESTIVAL_NAME,
     FESTIVAL_SLOGAN,
@@ -27,8 +28,12 @@ from services.config import (
     TIMEZONE_STR,
     get_admin_whatsapp_number,
     get_festival_dates,
+    get_poster_notification_email,
+    get_smtp_settings,
     is_mock_mode,
 )
+from services.email_service import EmailService, get_recent_email_notifications
+from services.poster_service import PosterService
 from services.sheets_service import SheetsService
 from services.whatsapp_service import WhatsAppService, get_recent_notifications
 
@@ -129,12 +134,13 @@ st.markdown(
 
 
 @st.cache_resource
-def get_services() -> tuple[SheetsService, CalendarService, WhatsAppService]:
+def get_services() -> tuple[SheetsService, CalendarService, WhatsAppService, EmailService]:
     """Cache service instances to reuse across reruns."""
     sheets = SheetsService()
     calendar = CalendarService()
     whatsapp = WhatsAppService()
-    return sheets, calendar, whatsapp
+    email = EmailService()
+    return sheets, calendar, whatsapp, email
 
 
 @st.cache_data
@@ -158,7 +164,7 @@ def validate_mobile(number: str) -> bool:
 
 
 def main() -> None:
-    sheets_service, calendar_service, whatsapp_service = get_services()
+    sheets_service, calendar_service, whatsapp_service, email_service = get_services()
     festival_dates = get_festival_dates()
 
     # Sidebar
@@ -231,6 +237,29 @@ def main() -> None:
     # TAB 1: SLOT CATALOG & BOOKING FLOW
     # =========================================================================
     with tab_book:
+        # Check if booking just completed and show celebratory confirmation + poster download
+        if "just_booked_poster" in st.session_state:
+            post_info = st.session_state.pop("just_booked_poster")
+            st.balloons()
+            st.success(
+                f"🎉 **Ganpati Bappa Morya! Booking Confirmed!**\n\n"
+                f"**Flat {post_info['flat_no']}** ({post_info['resident_name']}) is successfully registered for **{post_info['slot_name']} ({post_info['slot_time']})** on **{post_info['date_str']}**."
+            )
+            if post_info.get("email_ok"):
+                st.info(f"📧 **Aarti PDF Poster Generated & Auto-Emailed** to `{post_info['email_target']}`.")
+            else:
+                st.warning(f"⚠️ Email dispatch notice: {post_info.get('email_msg')}")
+
+            st.download_button(
+                label=f"📄 Download Aarti Poster for {post_info['date_str']} (PDF)",
+                data=post_info["pdf_bytes"],
+                file_name=f"Passiflora_Ganesh_Poster_{post_info['date_str']}.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+                key="btn_download_just_booked_poster",
+            )
+            st.markdown("---")
+
         st.markdown("#### Step 1: Select Festival Date (14th Sep – 25th Sep 2026)")
 
         # Date selector
@@ -272,6 +301,61 @@ def main() -> None:
         stat_c1.metric("Selected Date", f"{selected_day_info['short_label']}")
         stat_c2.metric("Available Aartis", f"{avail_count} / {total_slots}", delta=f"{avail_count} free")
         stat_c3.metric("Booked Aartis", f"{booked_count} / {total_slots}")
+
+        # Daily Aarti Poster Preview & Download Option
+        with st.expander(f"📄 View & Download Aarti Poster for {selected_day_info['short_label']} (PDF)", expanded=False):
+            st.write(
+                f"Generate the official celebration poster for **{selected_day_info['display_label']}** "
+                f"featuring Lord Ganesha, Vedic Tithi, and the resident families offering Aarti Seva."
+            )
+            p_col1, p_col2 = st.columns([1, 1])
+            with p_col1:
+                day_poster_bytes = PosterService.generate_poster_pdf(selected_date_str, day_bookings)
+                st.download_button(
+                    label="📥 Download A4 Poster (PDF)",
+                    data=day_poster_bytes,
+                    file_name=f"Passiflora_Ganesh_Poster_{selected_date_str}.pdf",
+                    mime="application/pdf",
+                    use_container_width=True,
+                    key=f"dl_poster_btn_{selected_date_str}",
+                )
+            with p_col2:
+                poster_target_input = st.text_input(
+                    "Send poster to email:",
+                    value=get_poster_notification_email(),
+                    key=f"email_target_in_{selected_date_str}",
+                )
+                if st.button("✉️ Email Poster", key=f"send_poster_btn_{selected_date_str}", use_container_width=True):
+                    with st.spinner("Dispatching poster email..."):
+                        p_summary = []
+                        for s in FESTIVAL_SLOTS:
+                            b_m = booked_slot_map.get(s["time"])
+                            if b_m:
+                                p_summary.append({
+                                    "slot_time": s["time"],
+                                    "slot_name": s["name"],
+                                    "flat": b_m.get("Flat_No", ""),
+                                    "family": f"{b_m.get('Resident_Name')} & Family",
+                                })
+                            else:
+                                p_summary.append({
+                                    "slot_time": s["time"],
+                                    "slot_name": s["name"],
+                                    "flat": "",
+                                    "family": "Available for Devotee Reservation",
+                                })
+
+                        em_ok, em_msg = email_service.send_poster_email(
+                            date_str=selected_date_str,
+                            pdf_bytes=day_poster_bytes,
+                            to_email=poster_target_input.strip(),
+                            tithi_str=selected_day_info["tithi"],
+                            bookings_summary=p_summary,
+                        )
+                        if em_ok:
+                            st.success(f"✅ Aarti poster emailed to {poster_target_input.strip()}!")
+                        else:
+                            st.error(f"Failed to email poster: {em_msg}")
 
         st.markdown("---")
         st.markdown("#### Step 2: Daily Aarti Availability & Reservation (Morning & Evening)")
@@ -392,12 +476,54 @@ def main() -> None:
                                                 slot_time=slot_time,
                                             )
 
-                                            st.balloons()
-                                            st.success(f"🎉 **Ganpati Bappa Morya! Booking Confirmed!** Flat {flat_no_in} is registered for {slot_name} ({slot_time}) on {selected_date_str}.")
-                                            if wa_ok:
-                                                st.info(f"📱 WhatsApp confirmation dispatched to {mobile_in}.")
-                                            else:
-                                                st.warning(f"Booking saved, but WhatsApp notification had notice: {wa_msg}")
+                                            # 4. Generate Daily Aarti PDF Poster & Auto-Email
+                                            fresh_day_bookings = sheets_service.get_bookings_for_date(selected_date_str)
+                                            poster_pdf_bytes = PosterService.generate_poster_pdf(
+                                                date_str=selected_date_str,
+                                                bookings=fresh_day_bookings,
+                                            )
+
+                                            # Prepare Summary for Email Body
+                                            email_summary = []
+                                            for s in FESTIVAL_SLOTS:
+                                                b_match = next((b for b in fresh_day_bookings if b.get("Slot_Time") == s["time"] and b.get("Status", "").lower() != "cancelled"), None)
+                                                if b_match:
+                                                    email_summary.append({
+                                                        "slot_time": s["time"],
+                                                        "slot_name": s["name"],
+                                                        "flat": b_match.get("Flat_No", ""),
+                                                        "family": f"{b_match.get('Resident_Name')} & Family",
+                                                    })
+                                                else:
+                                                    email_summary.append({
+                                                        "slot_time": s["time"],
+                                                        "slot_name": s["name"],
+                                                        "flat": "",
+                                                        "family": "Available for Devotee Reservation",
+                                                    })
+
+                                            target_email = get_poster_notification_email()
+                                            email_ok, email_msg = email_service.send_poster_email(
+                                                date_str=selected_date_str,
+                                                pdf_bytes=poster_pdf_bytes,
+                                                to_email=target_email,
+                                                tithi_str=selected_day_info["tithi"],
+                                                bookings_summary=email_summary,
+                                            )
+
+                                            st.session_state["just_booked_poster"] = {
+                                                "date_str": selected_date_str,
+                                                "slot_name": slot_name,
+                                                "slot_time": slot_time,
+                                                "flat_no": flat_no_in,
+                                                "resident_name": resident_name_in,
+                                                "mobile_no": mobile_in,
+                                                "pdf_bytes": poster_pdf_bytes,
+                                                "email_target": target_email,
+                                                "email_ok": email_ok,
+                                                "email_msg": email_msg,
+                                            }
+
                                             st.rerun()
                                         else:
                                             # Rollback GCal event if sheet booking collided
@@ -682,7 +808,65 @@ def main() -> None:
                 with st.expander(f"To: {notif.get('to')} | Status: {notif.get('status')}"):
                     st.code(notif.get("message", ""), language="text")
         else:
-            st.caption("No notifications sent yet in this session.")
+            st.caption("No WhatsApp notifications sent yet in this session.")
+
+        # Poster Generator Section
+        st.markdown("---")
+        st.markdown("##### 📄 Daily Aarti Poster Generator & Committee Email Dispatch")
+        st.write("Generate and download print-ready A4 PDF posters for any festival date or dispatch via email to committee members.")
+
+        p_col1, p_col2 = st.columns(2)
+        with p_col1:
+            admin_poster_date = st.date_input(
+                "Select Date for Aarti Poster:",
+                value=datetime.strptime(festival_dates[0]["date_str"], "%Y-%m-%d").date(),
+                key="admin_poster_date_input",
+            )
+        with p_col2:
+            admin_target_email = st.text_input(
+                "Target Email Address:",
+                value=get_poster_notification_email(),
+                key="admin_poster_email_input",
+            )
+
+        admin_poster_date_str = admin_poster_date.strftime("%Y-%m-%d")
+        admin_day_bookings = sheets_service.get_bookings_for_date(admin_poster_date_str)
+        admin_pdf_bytes = PosterService.generate_poster_pdf(admin_poster_date_str, admin_day_bookings)
+
+        btn_c1, btn_c2 = st.columns(2)
+        with btn_c1:
+            st.download_button(
+                label=f"📥 Download A4 Poster ({admin_poster_date_str})",
+                data=admin_pdf_bytes,
+                file_name=f"Passiflora_Ganesh_Poster_{admin_poster_date_str}.pdf",
+                mime="application/pdf",
+                use_container_width=True,
+                key=f"admin_dl_poster_{admin_poster_date_str}",
+            )
+        with btn_c2:
+            if st.button("✉️ Dispatch Poster Email", use_container_width=True, key="admin_send_poster_email_btn"):
+                with st.spinner("Dispatching Aarti poster email..."):
+                    day_tithi = HINDU_VEDIC_TITHIS.get(admin_poster_date_str, "Auspicious Festival Day")
+                    em_ok, em_msg = email_service.send_poster_email(
+                        date_str=admin_poster_date_str,
+                        pdf_bytes=admin_pdf_bytes,
+                        to_email=admin_target_email.strip(),
+                        tithi_str=day_tithi,
+                    )
+                    if em_ok:
+                        st.success(f"✅ Aarti poster successfully emailed to {admin_target_email.strip()}!")
+                    else:
+                        st.error(f"Failed to email poster: {em_msg}")
+
+        # Live Email Notification Log
+        st.markdown("---")
+        st.markdown("##### 📬 Recent Poster Email Dispatches (Audit Log)")
+        recent_emails = get_recent_email_notifications()
+        if recent_emails:
+            for em in recent_emails:
+                st.caption(f"📧 **To:** `{em.get('to')}` | **Subject:** `{em.get('subject')}` | **Attachment:** `{em.get('filename')}` ({em.get('size_bytes', 0) // 1024} KB) | **Status:** `{em.get('status')}`")
+        else:
+            st.caption(f"No emails dispatched yet in this session. Default auto-dispatch target: `{get_poster_notification_email()}`.")
 
 
 if __name__ == "__main__":

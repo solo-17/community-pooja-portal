@@ -205,3 +205,33 @@ def is_mock_mode() -> bool:
     has_gcp = get_service_account_credentials() is not None
     has_sheet = bool(get_google_sheet_key())
     return not (has_gcp and has_sheet)
+
+
+DEFAULT_POSTER_EMAIL = "avw2951981@gmail.com"
+
+
+def get_poster_notification_email() -> str:
+    """Return recipient email address for daily Aarti poster notifications."""
+    email = str(get_secret("POSTER_NOTIFICATION_EMAIL", DEFAULT_POSTER_EMAIL)).strip()
+    return email if email else DEFAULT_POSTER_EMAIL
+
+
+def get_smtp_settings() -> Dict[str, Any]:
+    """Return SMTP credentials and server connection configuration."""
+    port_val = get_secret("SMTP_PORT", 587)
+    try:
+        port = int(port_val)
+    except (ValueError, TypeError):
+        port = 587
+
+    user = str(get_secret("SMTP_USER", "")).strip()
+    from_email = str(get_secret("SMTP_FROM", user)).strip()
+
+    return {
+        "host": str(get_secret("SMTP_HOST", "smtp.gmail.com")).strip(),
+        "port": port,
+        "user": user,
+        "password": str(get_secret("SMTP_PASSWORD", "")).strip(),
+        "from_email": from_email,
+        "sender_name": str(get_secret("SMTP_SENDER_NAME", "Passiflora Ganesh Festival Committee")).strip(),
+    }
