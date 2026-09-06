@@ -52,7 +52,7 @@ HINDU_VEDIC_TITHIS: Dict[str, str] = {
     "2026-09-17": "Bhadrapada Shukla Saptami (Gauri Avahana / Sthapana)",
     "2026-09-18": "Bhadrapada Shukla Ashtami (Gauri Puja / Mahalakshmi Vrat)",
     "2026-09-19": "Bhadrapada Shukla Navami (Gauri Visarjan)",
-    "2026-09-20": "Bhadrapada Shukla Dashami (Sugandhi Dashami)",
+    "2026-09-20": "Bhadrapada Shukla Dashami (Satyanarayan Vrat / Mahaprasad)",
     "2026-09-21": "Bhadrapada Shukla Ekadashi (Parivartini / Padma Ekadashi)",
     "2026-09-22": "Bhadrapada Shukla Dvadashi (Vamana Jayanti)",
     "2026-09-23": "Bhadrapada Shukla Trayodashi (Bhauma / Pradosh Vrat)",
