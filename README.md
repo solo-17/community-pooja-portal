@@ -11,7 +11,7 @@ A full-stack booking portal built with **Python** and **Streamlit** for the **Pa
    - **Hindu Vedic Tithi for Each Day**: Displays the auspicious Tithi (e.g. *Bhadrapada Shukla Chaturthi / Sthapana*, *Rishi Panchami*, *Gauri Avahana*, *Anant Chaturdashi*).
    - **2 Daily Aarti Slots Only**:
      - 🌅 **Morning Aarti** (10:00 AM - 10:45 AM)
-     - 🌙 **Evening Aarti** (07:30 PM - 08:15 PM)
+     - 🌙 **Evening Aarti** (08:00 PM - 08:45 PM)
    - Real-time visual availability indicators (🟢 Available vs 🔴 Booked by Flat X).
 
 2. **Atomic Booking Flow**:

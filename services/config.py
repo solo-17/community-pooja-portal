@@ -35,11 +35,11 @@ FESTIVAL_SLOTS = [
         "duration_minutes": 45,
     },
     {
-        "time": "07:30 PM",
+        "time": "08:00 PM",
         "name": "Evening Aarti",
         "icon": "🌙",
-        "start_time_24": "19:30",
-        "end_time_24": "20:15",
+        "start_time_24": "20:00",
+        "end_time_24": "20:45",
         "duration_minutes": 45,
     },
 ]

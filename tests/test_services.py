@@ -67,12 +67,12 @@ def test_calendar_slot_datetimes():
     assert end_dt.hour == 10
     assert end_dt.minute == 45
 
-    # Evening Aarti: 07:30 PM - 08:15 PM
-    start_dt2, end_dt2 = parse_slot_datetimes("2026-09-14", "07:30 PM")
-    assert start_dt2.hour == 19
-    assert start_dt2.minute == 30
+    # Evening Aarti: 08:00 PM - 08:45 PM
+    start_dt2, end_dt2 = parse_slot_datetimes("2026-09-14", "08:00 PM")
+    assert start_dt2.hour == 20
+    assert start_dt2.minute == 0
     assert end_dt2.hour == 20
-    assert end_dt2.minute == 15
+    assert end_dt2.minute == 45
 
 
 def test_sheets_service_lifecycle():
@@ -173,7 +173,7 @@ def test_daily_digest_dry_run():
     service = SheetsService()
     service.create_booking(
         date_str="2026-09-14",
-        slot_time="07:30 PM",
+        slot_time="08:00 PM",
         flat_no="D-204",
         resident_name="Vikram Verma",
         mobile_no="9899001122",
