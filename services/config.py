@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Optional
 from zoneinfo import ZoneInfo
@@ -20,7 +21,7 @@ load_dotenv(find_dotenv())
 # Festival Branding
 FESTIVAL_NAME = "Passiflora Ganesh Festival 2026"
 FESTIVAL_SLOGAN = "Ganpati Bappa Morya"
-FESTIVAL_CHANT = "॥ गणपति बाप्पा मोरया • मंगल मूर्ती मोरया ॥"
+FESTIVAL_CHANT = "॥ गणपति बाप्पा मोरया • मंगलमूर्ती मोरया ॥"
 
 # Default Timezone for Community Festival
 TIMEZONE_STR = "Asia/Kolkata"
@@ -205,3 +206,42 @@ def is_mock_mode() -> bool:
     has_gcp = get_service_account_credentials() is not None
     has_sheet = bool(get_google_sheet_key())
     return not (has_gcp and has_sheet)
+
+
+DEFAULT_POSTER_EMAILS = ["avw2951981@gmail.com", "free.rohit@gmail.com"]
+DEFAULT_POSTER_EMAIL = ", ".join(DEFAULT_POSTER_EMAILS)
+
+
+def get_poster_notification_emails() -> List[str]:
+    """Return list of recipient email addresses for daily Aarti poster notifications."""
+    raw = str(get_secret("POSTER_NOTIFICATION_EMAIL", DEFAULT_POSTER_EMAIL)).strip()
+    if not raw:
+        return list(DEFAULT_POSTER_EMAILS)
+    parts = [p.strip() for p in re.split(r"[,;]+", raw) if p.strip()]
+    return parts if parts else list(DEFAULT_POSTER_EMAILS)
+
+
+def get_poster_notification_email() -> str:
+    """Return comma-separated string of recipient emails for daily Aarti poster notifications."""
+    return ", ".join(get_poster_notification_emails())
+
+
+def get_smtp_settings() -> Dict[str, Any]:
+    """Return SMTP credentials and server connection configuration."""
+    port_val = get_secret("SMTP_PORT", 587)
+    try:
+        port = int(port_val)
+    except (ValueError, TypeError):
+        port = 587
+
+    user = str(get_secret("SMTP_USER", "")).strip()
+    from_email = str(get_secret("SMTP_FROM", user)).strip()
+
+    return {
+        "host": str(get_secret("SMTP_HOST", "smtp.gmail.com")).strip(),
+        "port": port,
+        "user": user,
+        "password": str(get_secret("SMTP_PASSWORD", "")).strip(),
+        "from_email": from_email,
+        "sender_name": str(get_secret("SMTP_SENDER_NAME", "Passiflora Ganesh Festival Committee")).strip(),
+    }
