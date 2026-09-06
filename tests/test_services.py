@@ -36,9 +36,11 @@ def test_festival_dates():
     assert dates[0]["day_number"] == 1
     assert dates[0]["date_str"] == "2026-09-14"
     assert "Chaturthi" in dates[0]["tithi"]
+    assert dates[10]["date_str"] == "2026-09-24"
+    assert dates[10]["tithi"] == "Bhadrapada Shukla Chaturdashi"
     assert dates[11]["day_number"] == 12
     assert dates[11]["date_str"] == "2026-09-25"
-    assert "Purnima" in dates[11]["tithi"]
+    assert dates[11]["tithi"] == "Bhadrapada Shukla Chaturdashi (Anant Chaturdashi / Visarjan)"
     assert "date_str" in dates[0]
     assert "display_label" in dates[0]
     assert "weekday" in dates[0]
