@@ -10,7 +10,7 @@ A full-stack booking portal built with **Python** and **Streamlit** for the **Pa
    - Visual catalog across 12 celebration dates from Ganesh Chaturthi to Anant Chaturdashi / Purnima.
    - **Hindu Vedic Tithi for Each Day**: Displays the auspicious Tithi (e.g. *Bhadrapada Shukla Chaturthi / Sthapana*, *Rishi Panchami*, *Gauri Avahana*, *Anant Chaturdashi*).
    - **2 Daily Aarti Slots Only**:
-     - 🌅 **Morning Aarti** (07:30 AM - 08:15 AM)
+     - 🌅 **Morning Aarti** (10:00 AM - 10:45 AM)
      - 🌙 **Evening Aarti** (07:30 PM - 08:15 PM)
    - Real-time visual availability indicators (🟢 Available vs 🔴 Booked by Flat X).
 

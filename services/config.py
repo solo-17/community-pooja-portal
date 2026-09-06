@@ -27,11 +27,11 @@ IST = ZoneInfo(TIMEZONE_STR)
 # Daily Aarti Slots (2 times a day: Morning Aarti & Evening Aarti)
 FESTIVAL_SLOTS = [
     {
-        "time": "07:30 AM",
+        "time": "10:00 AM",
         "name": "Morning Aarti",
         "icon": "🌅",
-        "start_time_24": "07:30",
-        "end_time_24": "08:15",
+        "start_time_24": "10:00",
+        "end_time_24": "10:45",
         "duration_minutes": 45,
     },
     {

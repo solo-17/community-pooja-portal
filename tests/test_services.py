@@ -57,13 +57,13 @@ def test_calendar_slot_datetimes():
     """Verify start and end datetime parsing in IST timezone for Morning & Evening Aartis."""
     assert len(FESTIVAL_SLOTS) == 2
 
-    # Morning Aarti: 07:30 AM - 08:15 AM
-    start_dt, end_dt = parse_slot_datetimes("2026-09-14", "07:30 AM")
+    # Morning Aarti: 10:00 AM - 10:45 AM
+    start_dt, end_dt = parse_slot_datetimes("2026-09-14", "10:00 AM")
     assert str(start_dt.tzinfo) == TIMEZONE_STR
-    assert start_dt.hour == 7
-    assert start_dt.minute == 30
-    assert end_dt.hour == 8
-    assert end_dt.minute == 15
+    assert start_dt.hour == 10
+    assert start_dt.minute == 0
+    assert end_dt.hour == 10
+    assert end_dt.minute == 45
 
     # Evening Aarti: 07:30 PM - 08:15 PM
     start_dt2, end_dt2 = parse_slot_datetimes("2026-09-14", "07:30 PM")
@@ -77,7 +77,7 @@ def test_sheets_service_lifecycle():
     """Test full booking lifecycle: check availability, book, duplicate prevent, search, and cancel."""
     service = SheetsService()
     test_date = "2026-09-14"
-    test_slot = "07:30 AM"
+    test_slot = "10:00 AM"
 
     # 1. Slot must be initially available
     assert service.is_slot_available(test_date, test_slot) is True
@@ -151,7 +151,7 @@ def test_whatsapp_service_simulation():
         resident_name="Sunita Rao",
         flat_no="C-501",
         date_str="2026-09-14",
-        slot_time="07:30 AM",
+        slot_time="10:00 AM",
     )
     assert ok2 is True
 
@@ -161,7 +161,7 @@ def test_whatsapp_service_simulation():
         resident_name="Sunita Rao",
         flat_no="C-501",
         date_str="2026-09-14",
-        slot_time="07:30 AM",
+        slot_time="10:00 AM",
     )
     assert ok3 is True
 
