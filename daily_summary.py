@@ -72,7 +72,7 @@ def generate_and_send_daily_digest(
 
     if dry_run:
         logger.info("DRY RUN ENABLED - Message preview below:")
-        lines = [f"🙏 *Pooja & Aarti Schedule for {target_date_str}*:", ""]
+        lines = [f"🌺 *Passiflora Ganesh Festival 2026 - Daily Aarti Schedule ({target_date_str})*:", ""]
         booked_count = 0
         for item in schedule_items:
             t = item["time"]
@@ -86,7 +86,7 @@ def generate_and_send_daily_digest(
             else:
                 lines.append(f"• {item['icon']} *{t}* ({n}): _Available_")
         lines.append("")
-        lines.append(f"📊 Total Booked: {booked_count}/{len(schedule_items)} slots.")
+        lines.append(f"📊 Total Booked: {booked_count}/{len(schedule_items)} Aarti slots.")
         print("\n" + "\n".join(lines) + "\n")
         return True
 

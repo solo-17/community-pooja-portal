@@ -145,17 +145,17 @@ class WhatsAppService:
     ) -> Tuple[bool, str]:
         """Send instant booking confirmation message to resident."""
         body = (
-            "🙏 *Festival Pooja & Aarti Booking Confirmed!* 🙏\n\n"
+            "🌺 *Passiflora Ganesh Festival 2026 - Aarti Booking Confirmed!* 🪔\n\n"
             f"Dear *{resident_name}*,\n"
             f"Your booking for *{slot_time}* on *{date_str}* has been successfully confirmed.\n\n"
-            "📍 *Booking Details:*\n"
+            "📍 *Aarti Booking Details:*\n"
             f"• *Flat No:* {flat_no}\n"
             f"• *Resident:* {resident_name}\n"
             f"• *Date:* {date_str}\n"
-            f"• *Slot:* {slot_time}\n\n"
-            "⏰ *Please arrive 10 minutes prior to the scheduled slot.*\n"
-            "May the Divine bless you and your family!\n\n"
-            "_Community Festival Organizing Committee_"
+            f"• *Aarti Slot:* {slot_time}\n\n"
+            "⏰ *Please arrive at the pandal 10 minutes prior to the Aarti.*\n"
+            "May Lord Ganesha bestow joy, health, and prosperity upon you and your family!\n\n"
+            "_Passiflora Ganesh Festival Committee_"
         )
         return self.send_text_message(to_phone, body)
 
@@ -170,14 +170,14 @@ class WhatsAppService:
     ) -> Tuple[bool, str]:
         """Send 4-digit verification OTP to devotee WhatsApp for cancellation."""
         body = (
-            "🔐 *Community Pooja Portal - Cancellation Verification OTP*\n\n"
+            "🔐 *Passiflora Ganesh Festival 2026 - Cancellation Verification OTP*\n\n"
             f"Dear *{resident_name}*,\n"
             f"You have requested to cancel your booking for *{slot_time}* on *{date_str}* (Flat {flat_no}).\n\n"
             f"Your 4-Digit Cancellation OTP is:\n"
             f"👉 *{otp}* 👈\n\n"
             "⏳ *This code is valid for 5 minutes.*\n"
             "If you did NOT request this cancellation, please ignore this message to keep your slot secure.\n\n"
-            "_Community Festival Organizing Committee_"
+            "_Passiflora Ganesh Festival Committee_"
         )
         return self.send_text_message(to_phone, body)
 
@@ -191,7 +191,7 @@ class WhatsAppService:
     ) -> Tuple[bool, str]:
         """Send cancellation alert to resident."""
         body = (
-            "⚠️ *Pooja & Aarti Booking Cancelled*\n\n"
+            "⚠️ *Passiflora Ganesh Festival 2026 - Aarti Booking Cancelled*\n\n"
             f"Dear *{resident_name}*,\n"
             f"Your booking for *{slot_time}* on *{date_str}* (Flat {flat_no}) has been successfully cancelled.\n\n"
             "📍 *Cancellation Summary:*\n"
@@ -202,7 +202,7 @@ class WhatsAppService:
             "• *Calendar:* Event removed from Community Calendar 🗑️\n"
             "• *Slot Availability:* Reopened for other devotees 🟢\n\n"
             "Thank you for notifying the community.\n\n"
-            "_Community Festival Organizing Committee_"
+            "_Passiflora Ganesh Festival Committee_"
         )
         return self.send_text_message(to_phone, body)
 
@@ -220,7 +220,7 @@ class WhatsAppService:
                 "ADMIN_WHATSAPP_NUMBER is not configured in settings or environment.",
             )
 
-        lines = [f"🙏 *Pooja & Aarti Schedule for {date_str}*:", ""]
+        lines = [f"🌺 *Passiflora Ganesh Festival 2026 - Daily Aarti Schedule ({date_str})*:", ""]
 
         booked_count = 0
         for item in schedule_items:
@@ -241,9 +241,9 @@ class WhatsAppService:
 
         lines.append("")
         lines.append(
-            f"📊 *Summary:* {booked_count}/{len(schedule_items)} slots booked."
+            f"📊 *Summary:* {booked_count}/{len(schedule_items)} Aarti slots booked."
         )
-        lines.append("_Automated Community Pooja Digest_")
+        lines.append("_Passiflora Ganesh Festival Committee_")
 
         message_body = "\n".join(lines)
         return self.send_text_message(target_phone, message_body)

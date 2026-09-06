@@ -29,8 +29,8 @@ from services.whatsapp_service import WhatsAppService, get_recent_notifications
 
 # Page Configuration
 st.set_page_config(
-    page_title="Community Pooja & Aarti Portal",
-    page_icon="🪔",
+    page_title="Passiflora Ganesh Festival 2026",
+    page_icon="🌺",
     layout="wide",
     initial_sidebar_state="expanded",
 )
@@ -42,31 +42,32 @@ st.markdown(
     /* Festive Theme Styling */
     .festival-header {
         background: linear-gradient(135deg, #D84315 0%, #FF6F00 50%, #FFA000 100%);
-        padding: 24px;
-        border-radius: 12px;
+        padding: 26px;
+        border-radius: 14px;
         color: white;
         text-align: center;
         margin-bottom: 24px;
-        box-shadow: 0 4px 15px rgba(216, 67, 21, 0.2);
+        box-shadow: 0 4px 18px rgba(216, 67, 21, 0.25);
     }
     .festival-header h1 {
         color: white !important;
-        font-size: 2.2rem;
-        margin-bottom: 6px;
-        font-weight: 700;
+        font-size: 2.3rem;
+        margin-bottom: 8px;
+        font-weight: 800;
+        letter-spacing: 0.5px;
     }
     .festival-header p {
-        font-size: 1.05rem;
+        font-size: 1.1rem;
         color: #FFF3E0;
         margin-bottom: 0px;
     }
     .slot-card {
         border-radius: 10px;
-        padding: 18px;
+        padding: 20px;
         margin-bottom: 16px;
         background: #FFFFFF;
         border-left: 6px solid #D84315;
-        box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+        box-shadow: 0 2px 10px rgba(0,0,0,0.06);
     }
     .slot-card-available {
         border-left-color: #2E7D32 !important;
@@ -79,7 +80,7 @@ st.markdown(
     .badge-available {
         background-color: #2E7D32;
         color: white;
-        padding: 4px 10px;
+        padding: 4px 12px;
         border-radius: 20px;
         font-size: 0.85rem;
         font-weight: 600;
@@ -88,18 +89,20 @@ st.markdown(
     .badge-booked {
         background-color: #C62828;
         color: white;
-        padding: 4px 10px;
+        padding: 4px 12px;
         border-radius: 20px;
         font-size: 0.85rem;
         font-weight: 600;
         display: inline-block;
     }
-    .metric-card {
-        background: white;
-        border: 1px solid #FFE0B2;
-        padding: 14px;
+    .tithi-card {
+        background: #FFF8E1;
+        border: 1px solid #FFE082;
+        border-left: 6px solid #FF8F00;
+        padding: 14px 18px;
         border-radius: 8px;
-        text-align: center;
+        margin-top: 10px;
+        margin-bottom: 20px;
     }
     </style>
     """,
@@ -132,12 +135,13 @@ def main() -> None:
 
     # Sidebar
     with st.sidebar:
-        st.markdown("### 🪔 Festival Information")
+        st.markdown("### 🌺 Festival Information")
         st.markdown(
-            f"**Celebration Period:**\n{festival_dates[0]['date_str']} to {festival_dates[-1]['date_str']}"
+            f"**Passiflora Ganesh Festival 2026**\n\n"
+            f"📅 **Celebration Dates:**\n14th Sep to 25th Sep 2026\n\n"
+            f"🪔 **Duration:** {len(festival_dates)} Auspicious Days\n\n"
+            f"⏰ **Daily Rituals:** 2 Aartis Daily"
         )
-        st.markdown(f"**Total Days:** {len(festival_dates)} Days")
-        st.markdown(f"**Daily Slots:** {len(FESTIVAL_SLOTS)} Daily Rituals")
         st.markdown("---")
 
         # Mode Indicator
@@ -147,19 +151,19 @@ def main() -> None:
             st.success("✅ **Live Cloud Connected**\nGoogle Sheets, Google Calendar, and WhatsApp Cloud API active.")
 
         st.markdown("---")
-        st.markdown("### 📋 Daily Slot Schedule")
+        st.markdown("### 📋 Daily Aarti Schedule")
         for s in FESTIVAL_SLOTS:
             st.markdown(f"- **{s['time']}**: {s['icon']} {s['name']} ({s['duration_minutes']} min)")
 
         st.markdown("---")
-        st.caption("Community Festival Committee • Developed for Seamless Devotee Experience")
+        st.caption("Passiflora Ganesh Festival Committee • Developed for Devotee Booking")
 
     # Banner Header
     st.markdown(
         """
         <div class="festival-header">
-            <h1>🪔 Community Pooja & Aarti Booking Portal 🪔</h1>
-            <p>Reserve your auspicious slots for the Grand 10-Day Community Festival</p>
+            <h1>🌺 Passiflora Ganesh Festival 2026 🪔</h1>
+            <p>Community Daily Morning & Evening Aarti Booking Portal • 14th Sep to 25th Sep 2026</p>
         </div>
         """,
         unsafe_allow_html=True,
@@ -167,9 +171,9 @@ def main() -> None:
 
     # Navigation Tabs
     tab_book, tab_cancel, tab_overview, tab_admin = st.tabs([
-        "📅 Book a Pooja Slot",
+        "📅 Book an Aarti Slot",
         "🔍 My Bookings & Cancellation",
-        "📊 10-Day Festival Matrix",
+        "📊 12-Day Festival Matrix",
         "⚙️ Admin & Daily Digest",
     ])
 
@@ -177,12 +181,12 @@ def main() -> None:
     # TAB 1: SLOT CATALOG & BOOKING FLOW
     # =========================================================================
     with tab_book:
-        st.markdown("#### Step 1: Select Festival Day")
+        st.markdown("#### Step 1: Select Festival Date (14th Sep – 25th Sep 2026)")
 
         # Date selector
         date_options = {d["date_str"]: d["display_label"] for d in festival_dates}
         selected_date_str = st.selectbox(
-            "Choose Festival Date:",
+            "Choose Festival Date & Hindu Vedic Tithi:",
             options=list(date_options.keys()),
             format_func=lambda x: date_options[x],
             index=0,
@@ -190,6 +194,22 @@ def main() -> None:
         )
 
         selected_day_info = next(d for d in festival_dates if d["date_str"] == selected_date_str)
+
+        # Prominent Vedic Tithi Highlight Box
+        st.markdown(
+            f"""
+            <div class="tithi-card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 1.15rem; font-weight: 700; color: #D84315;">🪔 Vedic Tithi: {selected_day_info['tithi']}</span>
+                    <span style="background: #FFE082; color: #5D4037; font-weight: 700; padding: 4px 12px; border-radius: 12px; font-size: 0.85rem;">Day {selected_day_info['day_number']} of {len(festival_dates)}</span>
+                </div>
+                <p style="margin-top: 6px; margin-bottom: 0; color: #6D4C41; font-size: 0.95rem;">
+                    📅 <strong>{selected_day_info['weekday']}, {selected_day_info['date'].strftime('%d %B %Y')}</strong> • Passiflora Community Ganesh Pandal
+                </p>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
 
         # Get active bookings for this date
         day_bookings = sheets_service.get_bookings_for_date(selected_date_str)
@@ -201,15 +221,15 @@ def main() -> None:
         avail_count = total_slots - booked_count
 
         stat_c1, stat_c2, stat_c3 = st.columns(3)
-        stat_c1.metric("Date", selected_day_info["short_label"])
-        stat_c2.metric("Available Slots", f"{avail_count} / {total_slots}", delta=f"{avail_count} free")
-        stat_c3.metric("Booked Slots", f"{booked_count} / {total_slots}")
+        stat_c1.metric("Selected Date", f"{selected_day_info['short_label']}")
+        stat_c2.metric("Available Aartis", f"{avail_count} / {total_slots}", delta=f"{avail_count} free")
+        stat_c3.metric("Booked Aartis", f"{booked_count} / {total_slots}")
 
         st.markdown("---")
-        st.markdown("#### Step 2: Slot Availability & Reservation")
+        st.markdown("#### Step 2: Daily Aarti Availability & Reservation (Morning & Evening)")
 
-        # Render 3 Slot Cards
-        cols = st.columns(3)
+        # Render 2 Slot Cards (Morning Aarti & Evening Aarti)
+        cols = st.columns(len(FESTIVAL_SLOTS))
         for idx, slot_def in enumerate(FESTIVAL_SLOTS):
             slot_time = slot_def["time"]
             slot_name = slot_def["name"]
@@ -511,10 +531,10 @@ def main() -> None:
                                                 st.error(f"Failed to cancel booking: {msg}")
 
     # =========================================================================
-    # TAB 3: 10-DAY FESTIVAL GRID & STATS
+    # TAB 3: 12-DAY FESTIVAL GRID & STATS
     # =========================================================================
     with tab_overview:
-        st.markdown("#### 📊 10-Day Festival Slot Matrix")
+        st.markdown("#### 📊 Passiflora Ganesh Festival 2026 - 12-Day Aarti Matrix")
         all_bookings = sheets_service.get_all_bookings()
         active_bookings = [b for b in all_bookings if str(b.get("Status", "")).strip().lower() == "booked"]
 
@@ -525,14 +545,14 @@ def main() -> None:
         fill_rate = (total_active_booked / total_possible_slots) * 100 if total_possible_slots else 0
 
         m1, m2, m3, m4 = st.columns(4)
-        m1.metric("Total Festival Slots", total_possible_slots)
-        m2.metric("Slots Booked", total_active_booked)
-        m3.metric("Slots Available", total_remaining)
+        m1.metric("Total Aarti Slots", total_possible_slots)
+        m2.metric("Aartis Reserved", total_active_booked)
+        m3.metric("Aartis Available", total_remaining)
         m4.metric("Occupancy Rate", f"{fill_rate:.1f}%")
 
         st.markdown("---")
 
-        # Build comprehensive table view
+        # Build comprehensive table view with Hindu Vedic Tithi
         matrix_rows = []
         for d in festival_dates:
             d_str = d["date_str"]
@@ -545,15 +565,16 @@ def main() -> None:
             row_dict = {
                 "Festival Day": f"Day {d['day_number']} ({d['weekday']})",
                 "Date": d_str,
+                "Hindu Vedic Tithi": d["tithi"],
             }
 
             for s in FESTIVAL_SLOTS:
-                s_time = s["time"]
-                b = d_bookings.get(s_time)
+                s_label = f"{s['icon']} {s['name']} ({s['time']})"
+                b = d_bookings.get(s["time"])
                 if b:
-                    row_dict[s_time] = f"🔴 Flat {b.get('Flat_No')} ({b.get('Resident_Name')})"
+                    row_dict[s_label] = f"🔴 Flat {b.get('Flat_No')} ({b.get('Resident_Name')})"
                 else:
-                    row_dict[s_time] = "🟢 Available"
+                    row_dict[s_label] = "🟢 Available"
 
             matrix_rows.append(row_dict)
 

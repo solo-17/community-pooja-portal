@@ -30,14 +30,19 @@ def clean_mock_storage():
 
 
 def test_festival_dates():
-    """Verify that festival dates generate 10 consecutive celebration days."""
+    """Verify that festival dates generate 12 consecutive days from 14th Sep to 25th Sep 2026 with Vedic Tithi."""
     dates = get_festival_dates()
-    assert len(dates) == 10
+    assert len(dates) == 12
     assert dates[0]["day_number"] == 1
-    assert dates[9]["day_number"] == 10
+    assert dates[0]["date_str"] == "2026-09-14"
+    assert "Chaturthi" in dates[0]["tithi"]
+    assert dates[11]["day_number"] == 12
+    assert dates[11]["date_str"] == "2026-09-25"
+    assert "Purnima" in dates[11]["tithi"]
     assert "date_str" in dates[0]
     assert "display_label" in dates[0]
     assert "weekday" in dates[0]
+    assert "tithi" in dates[0]
 
 
 def test_phone_normalization():
@@ -49,27 +54,30 @@ def test_phone_normalization():
 
 
 def test_calendar_slot_datetimes():
-    """Verify start and end datetime parsing in IST timezone."""
-    start_dt, end_dt = parse_slot_datetimes("2026-09-07", "07:00 AM")
+    """Verify start and end datetime parsing in IST timezone for Morning & Evening Aartis."""
+    assert len(FESTIVAL_SLOTS) == 2
+
+    # Morning Aarti: 07:30 AM - 08:15 AM
+    start_dt, end_dt = parse_slot_datetimes("2026-09-14", "07:30 AM")
     assert str(start_dt.tzinfo) == TIMEZONE_STR
     assert start_dt.hour == 7
-    assert start_dt.minute == 0
-    assert end_dt.hour == 7
-    assert end_dt.minute == 45
+    assert start_dt.minute == 30
+    assert end_dt.hour == 8
+    assert end_dt.minute == 15
 
-    # Afternoon Pooja: 11:00 AM to 12:30 PM (90 mins)
-    start_dt2, end_dt2 = parse_slot_datetimes("2026-09-07", "11:00 AM")
-    assert start_dt2.hour == 11
-    assert start_dt2.minute == 0
-    assert end_dt2.hour == 12
-    assert end_dt2.minute == 30
+    # Evening Aarti: 07:30 PM - 08:15 PM
+    start_dt2, end_dt2 = parse_slot_datetimes("2026-09-14", "07:30 PM")
+    assert start_dt2.hour == 19
+    assert start_dt2.minute == 30
+    assert end_dt2.hour == 20
+    assert end_dt2.minute == 15
 
 
 def test_sheets_service_lifecycle():
     """Test full booking lifecycle: check availability, book, duplicate prevent, search, and cancel."""
     service = SheetsService()
-    test_date = "2026-09-08"
-    test_slot = "07:00 AM"
+    test_date = "2026-09-14"
+    test_slot = "07:30 AM"
 
     # 1. Slot must be initially available
     assert service.is_slot_available(test_date, test_slot) is True
@@ -142,8 +150,8 @@ def test_whatsapp_service_simulation():
         to_phone="9876543210",
         resident_name="Sunita Rao",
         flat_no="C-501",
-        date_str="2026-09-09",
-        slot_time="11:00 AM",
+        date_str="2026-09-14",
+        slot_time="07:30 AM",
     )
     assert ok2 is True
 
@@ -152,8 +160,8 @@ def test_whatsapp_service_simulation():
         otp="4821",
         resident_name="Sunita Rao",
         flat_no="C-501",
-        date_str="2026-09-09",
-        slot_time="11:00 AM",
+        date_str="2026-09-14",
+        slot_time="07:30 AM",
     )
     assert ok3 is True
 
@@ -162,15 +170,15 @@ def test_daily_digest_dry_run():
     """Test 4:00 AM daily summary generation in dry-run mode."""
     service = SheetsService()
     service.create_booking(
-        date_str="2026-09-10",
-        slot_time="07:00 PM",
+        date_str="2026-09-14",
+        slot_time="07:30 PM",
         flat_no="D-204",
         resident_name="Vikram Verma",
         mobile_no="9899001122",
     )
 
     success = generate_and_send_daily_digest(
-        target_date_str="2026-09-10",
+        target_date_str="2026-09-14",
         dry_run=True,
     )
     assert success is True

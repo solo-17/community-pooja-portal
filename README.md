@@ -1,17 +1,17 @@
-# 🪔 Community Pooja & Aarti Booking System
+# 🌺 Passiflora Ganesh Festival 2026 - Aarti Booking Portal 🪔
 
-A full-stack booking portal built with **Python** and **Streamlit** for a 10-day community festival. No external relational database is required: the system uses **Google Sheets** as the persistent datastore, **Google Calendar** for automated calendar synchronization, **Meta WhatsApp Cloud API** for resident notifications, and **GitHub Actions** for an automated 4:00 AM daily schedule digest.
+A full-stack booking portal built with **Python** and **Streamlit** for the **Passiflora Ganesh Festival 2026** (14th Sep to 25th Sep 2026). No external relational database is required: the system uses **Google Sheets** as the persistent datastore, **Google Calendar** for automated calendar synchronization, **Meta WhatsApp Cloud API** for resident notifications and OTP verification, and **GitHub Actions** for an automated 4:00 AM daily schedule digest.
 
 ---
 
 ## 🌟 Key Features
 
-1. **10-Day Festival Slot Catalog**:
-   - Visual catalog across 10 configurable festival dates.
-   - 3 daily ritual slots:
-     - 🌅 **Morning Aarti** (07:00 AM - 07:45 AM)
-     - 🪔 **Afternoon Pooja** (11:00 AM - 12:30 PM)
-     - 🌙 **Evening Aarti** (07:00 PM - 07:45 PM)
+1. **12-Day Festival Aarti Catalog (14th Sep – 25th Sep 2026)**:
+   - Visual catalog across 12 celebration dates from Ganesh Chaturthi to Anant Chaturdashi / Purnima.
+   - **Hindu Vedic Tithi for Each Day**: Displays the auspicious Tithi (e.g. *Bhadrapada Shukla Chaturthi / Sthapana*, *Rishi Panchami*, *Gauri Avahana*, *Anant Chaturdashi*).
+   - **2 Daily Aarti Slots Only**:
+     - 🌅 **Morning Aarti** (07:30 AM - 08:15 AM)
+     - 🌙 **Evening Aarti** (07:30 PM - 08:15 PM)
    - Real-time visual availability indicators (🟢 Available vs 🔴 Booked by Flat X).
 
 2. **Atomic Booking Flow**:
@@ -22,13 +22,14 @@ A full-stack booking portal built with **Python** and **Streamlit** for a 10-day
    - Synchronizes event to Admin Google Calendar with rich details.
    - Dispatches instant WhatsApp confirmation message via Meta WhatsApp Cloud API.
 
-3. **Self-Service Cancellation Flow**:
+3. **Secure WhatsApp OTP Cancellation Flow**:
    - Devotees lookup bookings using their Flat Number or WhatsApp Number.
-   - Cancellation updates Google Sheets status to `"Cancelled"`, frees the slot, automatically deletes the event from Google Calendar, and sends a WhatsApp cancellation notification.
+   - Requires a **4-digit WhatsApp OTP** sent to the devotee's registered mobile number before cancellation can proceed.
+   - Upon verification: marks Google Sheets status as `"Cancelled"`, deletes the Calendar Event ID from the sheet, deletes the event in Google Calendar, and dispatches a WhatsApp cancellation alert.
 
-4. **10-Day Festival Matrix & Admin Panel**:
-   - Comprehensive multi-day matrix showing all 30 slots across the festival.
-   - High-level metrics (Total slots, Booked count, Occupancy rate).
+4. **12-Day Festival Matrix & Admin Panel**:
+   - Comprehensive multi-day matrix showing all 24 Aarti slots across the 12 days alongside their Hindu Vedic Tithis.
+   - High-level metrics (Total Aarti slots, Reserved count, Available count, Occupancy rate).
    - Instant preview & manual test trigger for the 4:00 AM WhatsApp digest.
    - Audit log of recent WhatsApp messages sent in the current session.
 

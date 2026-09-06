@@ -1,4 +1,4 @@
-"""Configuration manager for the Community Pooja & Aarti Booking System.
+"""Configuration manager for Passiflora Ganesh Festival 2026 Aarti Booking System.
 
 Loads configuration from Streamlit secrets (`st.secrets`) or environment variables (.env).
 Provides fallback handling and mock mode detection when external services are not configured.
@@ -17,37 +17,48 @@ from dotenv import find_dotenv, load_dotenv
 # Load local .env file if present
 load_dotenv(find_dotenv())
 
+# Festival Branding
+FESTIVAL_NAME = "Passiflora Ganesh Festival 2026"
+
 # Default Timezone for Community Festival
 TIMEZONE_STR = "Asia/Kolkata"
 IST = ZoneInfo(TIMEZONE_STR)
 
-# Standard festival daily slots
+# Daily Aarti Slots (2 times a day: Morning Aarti & Evening Aarti)
 FESTIVAL_SLOTS = [
     {
-        "time": "07:00 AM",
+        "time": "07:30 AM",
         "name": "Morning Aarti",
         "icon": "🌅",
-        "start_time_24": "07:00",
-        "end_time_24": "07:45",
+        "start_time_24": "07:30",
+        "end_time_24": "08:15",
         "duration_minutes": 45,
     },
     {
-        "time": "11:00 AM",
-        "name": "Afternoon Pooja",
-        "icon": "🪔",
-        "start_time_24": "11:00",
-        "end_time_24": "12:30",
-        "duration_minutes": 90,
-    },
-    {
-        "time": "07:00 PM",
+        "time": "07:30 PM",
         "name": "Evening Aarti",
         "icon": "🌙",
-        "start_time_24": "19:00",
-        "end_time_24": "19:45",
+        "start_time_24": "19:30",
+        "end_time_24": "20:15",
         "duration_minutes": 45,
     },
 ]
+
+# Hindu Vedic Tithi Mapping for 14th Sep to 25th Sep 2026 (Bhadrapada Shukla Paksha)
+HINDU_VEDIC_TITHIS: Dict[str, str] = {
+    "2026-09-14": "Bhadrapada Shukla Chaturthi (Ganesh Chaturthi / Sthapana)",
+    "2026-09-15": "Bhadrapada Shukla Panchami (Rishi Panchami)",
+    "2026-09-16": "Bhadrapada Shukla Shashthi",
+    "2026-09-17": "Bhadrapada Shukla Saptami (Gauri Avahana / Sthapana)",
+    "2026-09-18": "Bhadrapada Shukla Ashtami (Gauri Puja / Mahalakshmi Vrat)",
+    "2026-09-19": "Bhadrapada Shukla Navami (Gauri Visarjan)",
+    "2026-09-20": "Bhadrapada Shukla Dashami (Sugandhi Dashami)",
+    "2026-09-21": "Bhadrapada Shukla Ekadashi (Parivartini / Padma Ekadashi)",
+    "2026-09-22": "Bhadrapada Shukla Dvadashi (Vamana Jayanti)",
+    "2026-09-23": "Bhadrapada Shukla Trayodashi (Bhauma / Pradosh Vrat)",
+    "2026-09-24": "Bhadrapada Shukla Chaturdashi (Anant Chaturdashi / Visarjan)",
+    "2026-09-25": "Bhadrapada Purnima (Satyanarayan Vrat / Purnima)",
+}
 
 
 def get_secret(key: str, default: Optional[Any] = None) -> Any:
@@ -137,33 +148,28 @@ def get_admin_whatsapp_number() -> str:
 
 
 def get_festival_start_date() -> date:
-    """Return the starting date of the 10-day festival.
-
-    If not set in env, defaults to today's date in IST.
-    """
-    date_str = get_secret("FESTIVAL_START_DATE")
+    """Return the starting date of Passiflora Ganesh Festival 2026 (14th Sep 2026)."""
+    date_str = get_secret("FESTIVAL_START_DATE", "2026-09-14")
     if date_str:
         try:
             return datetime.strptime(date_str.strip(), "%Y-%m-%d").date()
         except ValueError:
             pass
 
-    # Default to current date in IST
-    now_ist = datetime.now(IST)
-    return now_ist.date()
+    return date(2026, 9, 14)
 
 
 def get_festival_days_count() -> int:
-    """Return the number of festival days (default 10)."""
+    """Return the number of festival days (14th Sep to 25th Sep = 12 days)."""
     try:
-        val = get_secret("FESTIVAL_DAYS", 10)
+        val = get_secret("FESTIVAL_DAYS", 12)
         return int(val)
     except (ValueError, TypeError):
-        return 10
+        return 12
 
 
 def get_festival_dates() -> List[Dict[str, Any]]:
-    """Return list of 10 festival dates with labels, day index, and formatted strings."""
+    """Return list of festival dates with Vedic Tithi, day index, and labels."""
     start_date = get_festival_start_date()
     days_count = get_festival_days_count()
     result = []
@@ -171,12 +177,16 @@ def get_festival_dates() -> List[Dict[str, Any]]:
     for i in range(days_count):
         cur_date = start_date + timedelta(days=i)
         day_num = i + 1
+        d_str = cur_date.strftime("%Y-%m-%d")
+        tithi = HINDU_VEDIC_TITHIS.get(d_str, "Shukla Paksha")
+
         result.append(
             {
                 "day_number": day_num,
                 "date": cur_date,
-                "date_str": cur_date.strftime("%Y-%m-%d"),
-                "display_label": f"Day {day_num} • {cur_date.strftime('%a, %d %b %Y')}",
+                "date_str": d_str,
+                "tithi": tithi,
+                "display_label": f"Day {day_num} • {cur_date.strftime('%d %b (%a)')} • 🪔 {tithi}",
                 "short_label": f"Day {day_num} ({cur_date.strftime('%d %b')})",
                 "weekday": cur_date.strftime("%A"),
             }
@@ -185,11 +195,7 @@ def get_festival_dates() -> List[Dict[str, Any]]:
 
 
 def is_mock_mode() -> bool:
-    """Check if external APIs should run in mock/simulation mode.
-
-    Returns True if service account or WhatsApp credentials are missing, or if
-    explicitly enabled via MOCK_MODE=true.
-    """
+    """Check if external APIs should run in mock/simulation mode."""
     explicit = str(get_secret("MOCK_MODE", "")).lower() in ("true", "1", "yes")
     if explicit:
         return True
