@@ -159,6 +159,28 @@ class WhatsAppService:
         )
         return self.send_text_message(to_phone, body)
 
+    def send_cancellation_otp(
+        self,
+        to_phone: str,
+        otp: str,
+        resident_name: str,
+        flat_no: str,
+        date_str: str,
+        slot_time: str,
+    ) -> Tuple[bool, str]:
+        """Send 4-digit verification OTP to devotee WhatsApp for cancellation."""
+        body = (
+            "🔐 *Community Pooja Portal - Cancellation Verification OTP*\n\n"
+            f"Dear *{resident_name}*,\n"
+            f"You have requested to cancel your booking for *{slot_time}* on *{date_str}* (Flat {flat_no}).\n\n"
+            f"Your 4-Digit Cancellation OTP is:\n"
+            f"👉 *{otp}* 👈\n\n"
+            "⏳ *This code is valid for 5 minutes.*\n"
+            "If you did NOT request this cancellation, please ignore this message to keep your slot secure.\n\n"
+            "_Community Festival Organizing Committee_"
+        )
+        return self.send_text_message(to_phone, body)
+
     def send_cancellation_notification(
         self,
         to_phone: str,

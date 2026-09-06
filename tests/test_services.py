@@ -147,6 +147,16 @@ def test_whatsapp_service_simulation():
     )
     assert ok2 is True
 
+    ok3, msg3 = service.send_cancellation_otp(
+        to_phone="9876543210",
+        otp="4821",
+        resident_name="Sunita Rao",
+        flat_no="C-501",
+        date_str="2026-09-09",
+        slot_time="11:00 AM",
+    )
+    assert ok3 is True
+
 
 def test_daily_digest_dry_run():
     """Test 4:00 AM daily summary generation in dry-run mode."""

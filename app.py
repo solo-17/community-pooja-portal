@@ -9,6 +9,8 @@ Notifications: Meta WhatsApp Cloud API.
 from __future__ import annotations
 
 import re
+import secrets
+import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -373,6 +375,8 @@ def main() -> None:
                     c_phone = b.get("Mobile_No", "")
                     c_gcal = b.get("GCal_Event_ID", "")
                     c_created = b.get("Created_At", "")
+                    booking_key = f"{c_date}_{c_slot}_{c_flat}"
+                    masked_phone = f"******{c_phone[-4:]}" if len(c_phone) >= 4 else c_phone
 
                     with st.container():
                         st.markdown(
@@ -385,7 +389,7 @@ def main() -> None:
                                 <p style="margin-bottom: 6px; font-size: 1rem;">
                                     🏢 <strong>Flat:</strong> {c_flat} &nbsp;|&nbsp; 
                                     👤 <strong>Resident:</strong> {c_name} &nbsp;|&nbsp; 
-                                    📱 <strong>WhatsApp:</strong> {c_phone}
+                                    📱 <strong>WhatsApp:</strong> {masked_phone}
                                 </p>
                                 <p style="font-size: 0.85rem; color: #757575; margin-bottom: 0;">
                                     🗓️ <strong>Calendar Event:</strong> {c_gcal or 'Pending Sync'} &nbsp;|&nbsp; 
@@ -396,49 +400,115 @@ def main() -> None:
                             unsafe_allow_html=True,
                         )
 
-                        cancel_col1, cancel_col2 = st.columns([3, 1])
-                        with cancel_col2:
-                            confirm_cancel = st.button(
-                                f"❌ Cancel",
-                                key=f"cancel_btn_{b_idx}_{c_date}_{c_slot}",
-                                type="secondary",
-                                use_container_width=True,
-                                help=f"Cancel booking for {c_slot} on {c_date}",
-                            )
+                        active_otp = st.session_state.get("cancellation_otp")
+                        is_otp_for_this_booking = active_otp and active_otp.get("booking_key") == booking_key
 
-                        if confirm_cancel:
-                            with st.spinner("Processing cancellation (Sheets, Google Calendar, WhatsApp)..."):
-                                # 1. Mark Cancelled & delete Calendar Event ID from Google Sheets
-                                success, msg, gcal_id = sheets_service.cancel_booking(
-                                    date_str=c_date,
-                                    slot_time=c_slot,
-                                    flat_or_mobile=c_phone or c_flat,
+                        if not is_otp_for_this_booking:
+                            _, cancel_col2 = st.columns([2, 2])
+                            with cancel_col2:
+                                req_otp = st.button(
+                                    f"🔐 Request WhatsApp OTP to Cancel",
+                                    key=f"otp_req_btn_{b_idx}_{booking_key}",
+                                    type="secondary",
+                                    use_container_width=True,
+                                    help=f"Sends a 4-digit verification code to WhatsApp number {masked_phone} to verify identity.",
                                 )
 
-                                if success:
-                                    # 2. Delete Event from Google Calendar
-                                    del_id = gcal_id or c_gcal
-                                    if del_id:
-                                        calendar_service.delete_event(del_id)
-
-                                    # 3. Dispatch WhatsApp cancellation alert
-                                    wa_ok, wa_msg = whatsapp_service.send_cancellation_notification(
+                            if req_otp:
+                                otp_code = f"{secrets.randbelow(9000) + 1000}"
+                                st.session_state["cancellation_otp"] = {
+                                    "booking_key": booking_key,
+                                    "otp": otp_code,
+                                    "expires_at": time.time() + 300,
+                                    "phone": c_phone,
+                                    "name": c_name,
+                                    "flat": c_flat,
+                                    "date": c_date,
+                                    "slot": c_slot,
+                                    "gcal_id": c_gcal,
+                                }
+                                with st.spinner(f"Dispatching 4-digit verification OTP to WhatsApp {masked_phone}..."):
+                                    whatsapp_service.send_cancellation_otp(
                                         to_phone=c_phone,
+                                        otp=otp_code,
                                         resident_name=c_name,
                                         flat_no=c_flat,
                                         date_str=c_date,
                                         slot_time=c_slot,
                                     )
+                                st.success(f"📲 4-digit verification OTP sent to WhatsApp `{masked_phone}`! Please enter it below.")
+                                st.rerun()
+                        else:
+                            # OTP Verification Form
+                            st.info(f"📲 **Security Verification:** Enter the 4-digit OTP sent to WhatsApp `{masked_phone}` to confirm cancellation.")
+                            if is_mock_mode():
+                                st.warning(f"🧪 **Mock Mode Hint:** Your verification OTP is **{active_otp['otp']}**")
 
-                                    st.success(
-                                        f"✅ **Booking Cancelled Successfully!**\n"
-                                        f"- Status marked as **Cancelled** in Google Sheets\n"
-                                        f"- Calendar Event ID removed and event deleted from Google Calendar\n"
-                                        f"- WhatsApp cancellation notification sent to `{c_phone}`"
+                            with st.form(key=f"verify_otp_form_{b_idx}_{booking_key}"):
+                                otp_input = st.text_input(
+                                    "Enter 4-Digit WhatsApp OTP:",
+                                    max_chars=4,
+                                    placeholder="e.g. 5821",
+                                    key=f"otp_input_{b_idx}_{booking_key}",
+                                )
+                                v_col1, v_col2 = st.columns(2)
+                                with v_col1:
+                                    verify_btn = st.form_submit_button(
+                                        "✅ Verify & Cancel Booking",
+                                        type="primary",
+                                        use_container_width=True,
                                     )
+                                with v_col2:
+                                    dismiss_btn = st.form_submit_button(
+                                        "❌ Dismiss",
+                                        use_container_width=True,
+                                    )
+
+                                if dismiss_btn:
+                                    del st.session_state["cancellation_otp"]
                                     st.rerun()
-                                else:
-                                    st.error(f"Failed to cancel booking: {msg}")
+
+                                if verify_btn:
+                                    if time.time() > active_otp.get("expires_at", 0):
+                                        st.error("⏳ This OTP has expired. Please request a new OTP.")
+                                    elif otp_input.strip() != active_otp.get("otp"):
+                                        st.error("❌ Invalid OTP! Please check the 4-digit code sent to your WhatsApp number.")
+                                    else:
+                                        with st.spinner("Verifying OTP and executing cancellation across Sheets, Calendar & WhatsApp..."):
+                                            # 1. Mark Cancelled & delete Calendar Event ID from Google Sheets
+                                            success, msg, gcal_id = sheets_service.cancel_booking(
+                                                date_str=c_date,
+                                                slot_time=c_slot,
+                                                flat_or_mobile=c_phone or c_flat,
+                                            )
+
+                                            if success:
+                                                # 2. Delete Event from Google Calendar
+                                                del_id = gcal_id or c_gcal
+                                                if del_id:
+                                                    calendar_service.delete_event(del_id)
+
+                                                # 3. Dispatch WhatsApp cancellation alert
+                                                whatsapp_service.send_cancellation_notification(
+                                                    to_phone=c_phone,
+                                                    resident_name=c_name,
+                                                    flat_no=c_flat,
+                                                    date_str=c_date,
+                                                    slot_time=c_slot,
+                                                )
+
+                                                # Clear session OTP state
+                                                del st.session_state["cancellation_otp"]
+
+                                                st.success(
+                                                    f"✅ **Booking Verified & Cancelled Successfully!**\n"
+                                                    f"- Status marked as **Cancelled** in Google Sheets\n"
+                                                    f"- Calendar Event removed\n"
+                                                    f"- Cancellation confirmation sent to `{c_phone}`"
+                                                )
+                                                st.rerun()
+                                            else:
+                                                st.error(f"Failed to cancel booking: {msg}")
 
     # =========================================================================
     # TAB 3: 10-DAY FESTIVAL GRID & STATS
