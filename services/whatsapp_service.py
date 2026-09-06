@@ -145,7 +145,7 @@ class WhatsAppService:
     ) -> Tuple[bool, str]:
         """Send instant booking confirmation message to resident."""
         body = (
-            "🚩 *॥ गणपति बाप्पा मोरया • मंगल मूर्ती मोरया ॥* 🚩\n"
+            "🚩 *॥ गणपति बाप्पा मोरया • मंगलमूर्ती मोरया ॥* 🚩\n"
             "🙏 *Ganpati Bappa Morya!* 🙏\n\n"
             "🌺 *Passiflora Ganesh Festival 2026 - Aarti Booking Confirmed!* 🪔\n\n"
             f"Dear *{resident_name}*,\n"
@@ -223,7 +223,7 @@ class WhatsAppService:
             )
 
         lines = [
-            "🚩 *॥ गणपति बाप्पा मोरया • मंगल मूर्ती मोरया ॥* 🚩",
+            "🚩 *॥ गणपति बाप्पा मोरया • मंगलमूर्ती मोरया ॥* 🚩",
             f"🌺 *Passiflora Ganesh Festival 2026 - Daily Aarti Schedule ({date_str})*:",
             "",
         ]

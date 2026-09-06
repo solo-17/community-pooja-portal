@@ -73,7 +73,7 @@ def generate_and_send_daily_digest(
     if dry_run:
         logger.info("DRY RUN ENABLED - Message preview below:")
         lines = [
-            "🚩 *॥ गणपति बाप्पा मोरया • मंगल मूर्ती मोरया ॥* 🚩",
+            "🚩 *॥ गणपति बाप्पा मोरया • मंगलमूर्ती मोरया ॥* 🚩",
             f"🌺 *Passiflora Ganesh Festival 2026 - Daily Aarti Schedule ({target_date_str})*:",
             "",
         ]

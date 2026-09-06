@@ -166,7 +166,7 @@ def main() -> None:
         # Divine Ganpati Bappa Image in Sidebar
         img_path = Path("assets/ganpati_bappa.jpg")
         if img_path.exists():
-            st.image(str(img_path), caption="🙏 गणपति बाप्पा मोरया • मंगल मूर्ती मोरया 🙏")
+            st.image(str(img_path), caption="🙏 गणपति बाप्पा मोरया • मंगलमूर्ती मोरया 🙏")
 
         st.markdown("### 🌺 Festival Information")
         st.markdown(
@@ -209,7 +209,7 @@ def main() -> None:
         '<div style="display: flex; align-items: center; justify-content: center; gap: 22px; flex-wrap: wrap; text-align: center;">'
         f'{bappa_img_tag}'
         '<div style="text-align: center;">'
-        '<div class="bappa-badge">🚩 ॥ गणपति बाप्पा मोरया • मंगल मूर्ती मोरया ॥ 🚩</div>'
+        '<div class="bappa-badge">🚩 ॥ गणपति बाप्पा मोरया • मंगलमूर्ती मोरया ॥ 🚩</div>'
         '<h1 style="color: white !important; font-size: 2.2rem; margin: 0 0 6px 0; font-weight: 800;">🌺 Passiflora Ganesh Festival 2026 🪔</h1>'
         '<p style="margin: 0; font-size: 1.1rem; color: #FFF3E0; font-weight: 500;">Community Daily Morning & Evening Aarti Booking Portal • 14th Sep to 25th Sep 2026</p>'
         '<div style="margin-top: 8px; font-size: 1.15rem; color: #FFE082; font-weight: 800; letter-spacing: 0.5px;">🙏 Ganpati Bappa Morya! Mangal Murti Morya! 🙏</div>'
