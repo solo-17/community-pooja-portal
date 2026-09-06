@@ -8,6 +8,8 @@ Notifications: Meta WhatsApp Cloud API.
 
 from __future__ import annotations
 
+import base64
+from pathlib import Path
 import re
 import secrets
 import time
@@ -18,6 +20,9 @@ import streamlit as st
 
 from services.calendar_service import CalendarService
 from services.config import (
+    FESTIVAL_CHANT,
+    FESTIVAL_NAME,
+    FESTIVAL_SLOGAN,
     FESTIVAL_SLOTS,
     TIMEZONE_STR,
     get_admin_whatsapp_number,
@@ -29,7 +34,7 @@ from services.whatsapp_service import WhatsAppService, get_recent_notifications
 
 # Page Configuration
 st.set_page_config(
-    page_title="Passiflora Ganesh Festival 2026",
+    page_title="Passiflora Ganesh Festival 2026 - Ganpati Bappa Morya",
     page_icon="🌺",
     layout="wide",
     initial_sidebar_state="expanded",
@@ -42,7 +47,7 @@ st.markdown(
     /* Festive Theme Styling */
     .festival-header {
         background: linear-gradient(135deg, #D84315 0%, #FF6F00 50%, #FFA000 100%);
-        padding: 26px;
+        padding: 24px;
         border-radius: 14px;
         color: white;
         text-align: center;
@@ -51,8 +56,8 @@ st.markdown(
     }
     .festival-header h1 {
         color: white !important;
-        font-size: 2.3rem;
-        margin-bottom: 8px;
+        font-size: 2.2rem;
+        margin-bottom: 6px;
         font-weight: 800;
         letter-spacing: 0.5px;
     }
@@ -60,6 +65,19 @@ st.markdown(
         font-size: 1.1rem;
         color: #FFF3E0;
         margin-bottom: 0px;
+    }
+    .bappa-badge {
+        display: inline-block;
+        background: rgba(255, 255, 255, 0.2);
+        border: 1.5px solid rgba(255, 248, 225, 0.7);
+        padding: 5px 16px;
+        border-radius: 22px;
+        font-size: 1.2rem;
+        font-weight: 800;
+        color: #FFF8E1;
+        letter-spacing: 0.8px;
+        margin-bottom: 8px;
+        text-shadow: 0 1px 3px rgba(0,0,0,0.2);
     }
     .slot-card {
         border-radius: 10px;
@@ -119,6 +137,16 @@ def get_services() -> tuple[SheetsService, CalendarService, WhatsAppService]:
     return sheets, calendar, whatsapp
 
 
+@st.cache_data
+def get_bappa_image_base64() -> str:
+    """Encode Ganpati Bappa image as base64 string for embedding in header."""
+    img_path = Path("assets/ganpati_bappa.jpg")
+    if img_path.exists():
+        with open(img_path, "rb") as f:
+            return base64.b64encode(f.read()).decode("utf-8")
+    return ""
+
+
 def validate_mobile(number: str) -> bool:
     """Validate 10-digit mobile number."""
     digits = re.sub(r"\D", "", number)
@@ -135,9 +163,15 @@ def main() -> None:
 
     # Sidebar
     with st.sidebar:
+        # Divine Ganpati Bappa Image in Sidebar
+        img_path = Path("assets/ganpati_bappa.jpg")
+        if img_path.exists():
+            st.image(str(img_path), caption="🙏 गणपति बाप्पा मोरया • मंगल मूर्ती मोरया 🙏")
+
         st.markdown("### 🌺 Festival Information")
         st.markdown(
             f"**Passiflora Ganesh Festival 2026**\n\n"
+            f"🚩 **Ganpati Bappa Morya!**\n\n"
             f"📅 **Celebration Dates:**\n14th Sep to 25th Sep 2026\n\n"
             f"🪔 **Duration:** {len(festival_dates)} Auspicious Days\n\n"
             f"⏰ **Daily Rituals:** 2 Aartis Daily"
@@ -158,12 +192,34 @@ def main() -> None:
         st.markdown("---")
         st.caption("Passiflora Ganesh Festival Committee • Developed for Devotee Booking")
 
-    # Banner Header
-    st.markdown(
+    # Banner Header with Divine Ganpati Bappa Image & Chant
+    bappa_b64 = get_bappa_image_base64()
+    bappa_img_tag = ""
+    if bappa_b64:
+        bappa_img_tag = f"""
+        <div style="flex-shrink: 0;">
+            <img src="data:image/jpeg;base64,{bappa_b64}" 
+                 style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid #FFE082; box-shadow: 0 4px 16px rgba(0,0,0,0.35);" 
+                 alt="Ganpati Bappa Morya" />
+        </div>
         """
+
+    st.markdown(
+        f"""
         <div class="festival-header">
-            <h1>🌺 Passiflora Ganesh Festival 2026 🪔</h1>
-            <p>Community Daily Morning & Evening Aarti Booking Portal • 14th Sep to 25th Sep 2026</p>
+            <div style="display: flex; align-items: center; justify-content: center; gap: 22px; flex-wrap: wrap; text-align: center;">
+                {bappa_img_tag}
+                <div style="text-align: center;">
+                    <div class="bappa-badge">
+                        🚩 ॥ गणपति बाप्पा मोरया • मंगल मूर्ती मोरया ॥ 🚩
+                    </div>
+                    <h1>🌺 Passiflora Ganesh Festival 2026 🪔</h1>
+                    <p>Community Daily Morning & Evening Aarti Booking Portal • 14th Sep to 25th Sep 2026</p>
+                    <div style="margin-top: 8px; font-size: 1.15rem; color: #FFE082; font-weight: 800; letter-spacing: 0.5px;">
+                        🙏 Ganpati Bappa Morya! Mangal Murti Morya! 🙏
+                    </div>
+                </div>
+            </div>
         </div>
         """,
         unsafe_allow_html=True,
@@ -349,7 +405,7 @@ def main() -> None:
                                             )
 
                                             st.balloons()
-                                            st.success(f"🎉 **Booking Confirmed!** Flat {flat_no_in} is registered for {slot_name} ({slot_time}) on {selected_date_str}.")
+                                            st.success(f"🎉 **Ganpati Bappa Morya! Booking Confirmed!** Flat {flat_no_in} is registered for {slot_name} ({slot_time}) on {selected_date_str}.")
                                             if wa_ok:
                                                 st.info(f"📱 WhatsApp confirmation dispatched to {mobile_in}.")
                                             else:
