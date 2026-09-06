@@ -221,20 +221,25 @@ def test_poster_pdf_generation():
 
 def test_email_service_dispatch():
     """Verify that EmailService generates email payload with attached PDF and audits dispatch."""
-    from services.config import get_poster_notification_email
+    from services.config import get_poster_notification_email, get_poster_notification_emails
     from services.email_service import EmailService, get_recent_email_notifications
     from services.poster_service import PosterService
 
-    default_email = get_poster_notification_email()
-    assert default_email == "avw2951981@gmail.com"
+    default_emails = get_poster_notification_emails()
+    assert "avw2951981@gmail.com" in default_emails
+    assert "free.rohit@gmail.com" in default_emails
+
+    default_email_str = get_poster_notification_email()
+    assert "avw2951981@gmail.com" in default_email_str
+    assert "free.rohit@gmail.com" in default_email_str
 
     service = EmailService()
     pdf_bytes = PosterService.generate_poster_pdf("2026-09-14", [])
 
+    # Test default multi-recipient dispatch
     ok, msg = service.send_poster_email(
         date_str="2026-09-14",
         pdf_bytes=pdf_bytes,
-        to_email="avw2951981@gmail.com",
         tithi_str="Bhadrapada Shukla Chaturthi",
         bookings_summary=[
             {"slot_time": "10:00 AM", "slot_name": "Morning Aarti", "flat": "A-302", "family": "Ramesh Sharma & Family"},
@@ -244,9 +249,13 @@ def test_email_service_dispatch():
 
     assert ok is True
     assert "avw2951981@gmail.com" in msg
+    assert "free.rohit@gmail.com" in msg
 
     recent_emails = get_recent_email_notifications()
     assert len(recent_emails) > 0
-    assert recent_emails[0]["to"] == "avw2951981@gmail.com"
-    assert "Passiflora_Ganesh_Poster_2026-09-14.pdf" in recent_emails[0]["filename"]
+    latest = recent_emails[0]
+    assert "avw2951981@gmail.com" in latest["to"]
+    assert "free.rohit@gmail.com" in latest["to"]
+    assert latest["recipients"] == ["avw2951981@gmail.com", "free.rohit@gmail.com"]
+    assert "Passiflora_Ganesh_Poster_2026-09-14.pdf" in latest["filename"]
 

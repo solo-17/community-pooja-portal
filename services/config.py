@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from datetime import date, datetime, timedelta
 from typing import Any, Dict, List, Optional
 from zoneinfo import ZoneInfo
@@ -207,13 +208,22 @@ def is_mock_mode() -> bool:
     return not (has_gcp and has_sheet)
 
 
-DEFAULT_POSTER_EMAIL = "avw2951981@gmail.com"
+DEFAULT_POSTER_EMAILS = ["avw2951981@gmail.com", "free.rohit@gmail.com"]
+DEFAULT_POSTER_EMAIL = ", ".join(DEFAULT_POSTER_EMAILS)
+
+
+def get_poster_notification_emails() -> List[str]:
+    """Return list of recipient email addresses for daily Aarti poster notifications."""
+    raw = str(get_secret("POSTER_NOTIFICATION_EMAIL", DEFAULT_POSTER_EMAIL)).strip()
+    if not raw:
+        return list(DEFAULT_POSTER_EMAILS)
+    parts = [p.strip() for p in re.split(r"[,;]+", raw) if p.strip()]
+    return parts if parts else list(DEFAULT_POSTER_EMAILS)
 
 
 def get_poster_notification_email() -> str:
-    """Return recipient email address for daily Aarti poster notifications."""
-    email = str(get_secret("POSTER_NOTIFICATION_EMAIL", DEFAULT_POSTER_EMAIL)).strip()
-    return email if email else DEFAULT_POSTER_EMAIL
+    """Return comma-separated string of recipient emails for daily Aarti poster notifications."""
+    return ", ".join(get_poster_notification_emails())
 
 
 def get_smtp_settings() -> Dict[str, Any]:

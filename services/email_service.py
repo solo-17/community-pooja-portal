@@ -8,16 +8,19 @@ from __future__ import annotations
 
 import logging
 import os
+import re
 import smtplib
 from email.mime.application import MIMEApplication
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
-from typing import Any, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 from services.config import (
     DEFAULT_POSTER_EMAIL,
+    DEFAULT_POSTER_EMAILS,
     FESTIVAL_NAME,
     get_poster_notification_email,
+    get_poster_notification_emails,
     get_smtp_settings,
 )
 
@@ -42,15 +45,25 @@ class EmailService:
         self,
         date_str: str,
         pdf_bytes: bytes,
-        to_email: Optional[str] = None,
+        to_email: Optional[Union[str, List[str]]] = None,
         tithi_str: str = "",
         bookings_summary: Optional[List[Dict[str, str]]] = None,
     ) -> Tuple[bool, str]:
-        """Dispatch daily Aarti PDF poster to committee recipient.
+        """Dispatch daily Aarti PDF poster to committee recipient(s).
 
+        Supports single email string, comma-separated emails, or list of emails.
         Returns (success: bool, status_message: str).
         """
-        recipient = to_email or get_poster_notification_email()
+        recipients: List[str] = []
+        if isinstance(to_email, list):
+            recipients = [e.strip() for e in to_email if e and e.strip()]
+        elif isinstance(to_email, str) and to_email.strip():
+            recipients = [e.strip() for e in re.split(r"[,;]+", to_email) if e.strip()]
+
+        if not recipients:
+            recipients = get_poster_notification_emails()
+
+        recipient_str = ", ".join(recipients)
         filename = f"Passiflora_Ganesh_Poster_{date_str}.pdf"
 
         # Construct Email Subject & Body
@@ -88,7 +101,8 @@ class EmailService:
         )
 
         log_entry = {
-            "to": recipient,
+            "to": recipient_str,
+            "recipients": recipients,
             "subject": subject,
             "filename": filename,
             "size_bytes": len(pdf_bytes),
@@ -99,7 +113,7 @@ class EmailService:
         if not self.is_configured:
             logger.info(
                 "[MOCK EMAIL] To: %s | Subject: %s | Attached: %s (%d bytes)",
-                recipient,
+                recipient_str,
                 subject,
                 filename,
                 len(pdf_bytes),
@@ -108,7 +122,7 @@ class EmailService:
             RECENT_EMAIL_NOTIFICATIONS.append(log_entry)
             return (
                 True,
-                f"Simulated email with PDF poster dispatched to {recipient} (mock mode).",
+                f"Simulated email with PDF poster dispatched to {recipient_str} (mock mode).",
             )
 
         # Real SMTP Delivery
@@ -123,7 +137,7 @@ class EmailService:
             msg = MIMEMultipart()
             msg["Subject"] = subject
             msg["From"] = f"{sender_name} <{from_email}>"
-            msg["To"] = recipient
+            msg["To"] = recipient_str
 
             # Attach Text Body
             msg.attach(MIMEText(body_text, "plain", "utf-8"))
@@ -143,19 +157,19 @@ class EmailService:
                 server.starttls()
                 server.ehlo()
                 server.login(user, password)
-                server.send_message(msg)
+                server.send_message(msg, to_addrs=recipients)
 
-            logger.info("Email with PDF poster successfully sent to %s", recipient)
+            logger.info("Email with PDF poster successfully sent to %s", recipient_str)
             log_entry["status"] = "delivered"
             RECENT_EMAIL_NOTIFICATIONS.append(log_entry)
             return (
                 True,
-                f"Aarti PDF poster successfully emailed to {recipient}.",
+                f"Aarti PDF poster successfully emailed to {recipient_str}.",
             )
 
         except Exception as e:
             err_msg = str(e)
-            logger.error("Failed to send email to %s: %s", recipient, err_msg)
+            logger.error("Failed to send email to %s: %s", recipient_str, err_msg)
             log_entry["status"] = f"failed: {err_msg}"
             RECENT_EMAIL_NOTIFICATIONS.append(log_entry)
             return (
