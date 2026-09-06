@@ -266,12 +266,16 @@ class SheetsService:
             mobile_digits = "".join(filter(str.isdigit, mobile))
 
             matched = False
-            # Flat match (exact or substring)
-            if clean_query == flat or clean_query in flat:
+            flat_alnum = "".join(filter(str.isalnum, flat))
+            query_alnum = "".join(filter(str.isalnum, clean_query))
+
+            # Flat match (exact, substring, or normalized alphanumeric)
+            if clean_query == flat or clean_query in flat or (query_alnum and query_alnum in flat_alnum):
                 matched = True
-            # Mobile match
+            # Mobile match (exact 10 digits or suffix match)
             elif query_digits and (
-                query_digits in mobile_digits
+                query_digits == mobile_digits
+                or query_digits in mobile_digits
                 or mobile_digits.endswith(query_digits)
             ):
                 matched = True
@@ -289,6 +293,7 @@ class SheetsService:
     ) -> Tuple[bool, str, Optional[str]]:
         """Cancel an active booking.
 
+        Marks status as 'Cancelled' and deletes/clears GCal_Event_ID.
         Returns (success: bool, message: str, gcal_event_id: Optional[str]).
         """
         clean_date = date_str.strip()
@@ -302,7 +307,7 @@ class SheetsService:
                 if (
                     item.get("Date") == clean_date
                     and item.get("Slot_Time") == clean_slot
-                    and item.get("Status") == "Booked"
+                    and str(item.get("Status", "")).strip().lower() == "booked"
                 ):
                     flat = str(item.get("Flat_No", "")).strip().lower()
                     mobile = str(item.get("Mobile_No", "")).strip()
@@ -313,12 +318,15 @@ class SheetsService:
                         or (target_digits and target_digits in mobile_digits)
                         or clean_target == ""
                     ):
+                        gcal_id = item.get("GCal_Event_ID")
                         item["Status"] = "Cancelled"
+                        # Delete / clear Calendar Event ID as requested
+                        item["GCal_Event_ID"] = ""
                         self._write_mock_data(data)
                         return (
                             True,
-                            "Booking successfully cancelled.",
-                            item.get("GCal_Event_ID"),
+                            "Booking successfully cancelled and Calendar Event ID removed.",
+                            gcal_id,
                         )
             return (
                 False,
@@ -353,13 +361,17 @@ class SheetsService:
                         or (target_digits and target_digits in mobile_digits)
                         or clean_target == ""
                     ):
-                        # Update status cell to 'Cancelled'
+                        # 1. Update status cell to 'Cancelled'
                         self._worksheet.update_cell(
                             row_idx, status_col_idx, "Cancelled"
                         )
+                        # 2. Delete / clear Calendar Event ID cell
+                        self._worksheet.update_cell(
+                            row_idx, gcal_col_idx, ""
+                        )
                         return (
                             True,
-                            "Booking successfully marked as Cancelled in Google Sheets.",
+                            "Booking marked as Cancelled and Calendar Event ID deleted from Google Sheets.",
                             gcal_id,
                         )
 

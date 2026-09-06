@@ -171,9 +171,15 @@ class WhatsAppService:
         body = (
             "⚠️ *Pooja & Aarti Booking Cancelled*\n\n"
             f"Dear *{resident_name}*,\n"
-            f"Your booking for *{slot_time}* on *{date_str}* (Flat {flat_no}) has been cancelled as requested.\n\n"
-            "The slot is now released and open for other devotees.\n\n"
-            "Warm regards,\n"
+            f"Your booking for *{slot_time}* on *{date_str}* (Flat {flat_no}) has been successfully cancelled.\n\n"
+            "📍 *Cancellation Summary:*\n"
+            f"• *Flat No:* {flat_no}\n"
+            f"• *Date:* {date_str}\n"
+            f"• *Slot:* {slot_time}\n"
+            "• *Status:* Cancelled in Google Sheets ❌\n"
+            "• *Calendar:* Event removed from Community Calendar 🗑️\n"
+            "• *Slot Availability:* Reopened for other devotees 🟢\n\n"
+            "Thank you for notifying the community.\n\n"
             "_Community Festival Organizing Committee_"
         )
         return self.send_text_message(to_phone, body)

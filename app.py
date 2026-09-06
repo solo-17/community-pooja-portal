@@ -350,18 +350,18 @@ def main() -> None:
         with search_col:
             search_query = st.text_input(
                 "Search query:",
-                placeholder="e.g. 402 or 9876543210",
+                placeholder="Enter Flat Number (e.g. 402, A-402) or 10-digit WhatsApp Mobile...",
                 key="cancel_search_query",
                 label_visibility="collapsed",
             )
         with btn_col:
-            do_search = st.button("Search", type="primary", use_container_width=True)
+            do_search = st.button("🔍 Search", type="primary", use_container_width=True)
 
-        if search_query:
-            active_results = sheets_service.find_active_bookings(search_query)
+        if search_query.strip():
+            active_results = sheets_service.find_active_bookings(search_query.strip())
 
             if not active_results:
-                st.warning(f"No active bookings found matching '{search_query}'. Please check your input.")
+                st.warning(f"No active bookings found for '{search_query.strip()}'. Please check your flat or mobile number.")
             else:
                 st.success(f"Found {len(active_results)} active booking(s):")
 
@@ -377,10 +377,20 @@ def main() -> None:
                     with st.container():
                         st.markdown(
                             f"""
-                            <div style="background: white; border: 1px solid #FFCCBC; border-radius: 8px; padding: 16px; margin-bottom: 12px;">
-                                <h4 style="margin-top: 0; color: #D84315;">🪔 {c_slot} on {c_date}</h4>
-                                <p style="margin-bottom: 4px;"><strong>Flat:</strong> {c_flat} | <strong>Resident:</strong> {c_name} | <strong>Mobile:</strong> {c_phone}</p>
-                                <p style="font-size: 0.85rem; color: #757575; margin-bottom: 0;">Booked on: {c_created} | GCal ID: {c_gcal or 'None'}</p>
+                            <div style="background: white; border: 1px solid #FFCCBC; border-radius: 8px; padding: 18px; margin-bottom: 14px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                    <h4 style="margin: 0; color: #D84315;">🪔 {c_slot} on {c_date}</h4>
+                                    <span class="badge-booked">Active Booking</span>
+                                </div>
+                                <p style="margin-bottom: 6px; font-size: 1rem;">
+                                    🏢 <strong>Flat:</strong> {c_flat} &nbsp;|&nbsp; 
+                                    👤 <strong>Resident:</strong> {c_name} &nbsp;|&nbsp; 
+                                    📱 <strong>WhatsApp:</strong> {c_phone}
+                                </p>
+                                <p style="font-size: 0.85rem; color: #757575; margin-bottom: 0;">
+                                    🗓️ <strong>Calendar Event:</strong> {c_gcal or 'Pending Sync'} &nbsp;|&nbsp; 
+                                    🕒 <strong>Booked at:</strong> {c_created}
+                                </p>
                             </div>
                             """,
                             unsafe_allow_html=True,
@@ -389,28 +399,30 @@ def main() -> None:
                         cancel_col1, cancel_col2 = st.columns([3, 1])
                         with cancel_col2:
                             confirm_cancel = st.button(
-                                f"❌ Cancel Booking",
+                                f"❌ Cancel",
                                 key=f"cancel_btn_{b_idx}_{c_date}_{c_slot}",
                                 type="secondary",
                                 use_container_width=True,
+                                help=f"Cancel booking for {c_slot} on {c_date}",
                             )
 
                         if confirm_cancel:
-                            with st.spinner("Processing cancellation across Sheets, Calendar, and WhatsApp..."):
+                            with st.spinner("Processing cancellation (Sheets, Google Calendar, WhatsApp)..."):
+                                # 1. Mark Cancelled & delete Calendar Event ID from Google Sheets
                                 success, msg, gcal_id = sheets_service.cancel_booking(
                                     date_str=c_date,
                                     slot_time=c_slot,
-                                    flat_or_mobile=search_query,
+                                    flat_or_mobile=c_phone or c_flat,
                                 )
 
                                 if success:
-                                    # 2. Delete Calendar event
+                                    # 2. Delete Event from Google Calendar
                                     del_id = gcal_id or c_gcal
                                     if del_id:
                                         calendar_service.delete_event(del_id)
 
-                                    # 3. Dispatch WhatsApp cancellation notification
-                                    whatsapp_service.send_cancellation_notification(
+                                    # 3. Dispatch WhatsApp cancellation alert
+                                    wa_ok, wa_msg = whatsapp_service.send_cancellation_notification(
                                         to_phone=c_phone,
                                         resident_name=c_name,
                                         flat_no=c_flat,
@@ -418,7 +430,12 @@ def main() -> None:
                                         slot_time=c_slot,
                                     )
 
-                                    st.success(f"✅ Booking for Flat {c_flat} on {c_date} ({c_slot}) has been successfully cancelled. The slot is now open.")
+                                    st.success(
+                                        f"✅ **Booking Cancelled Successfully!**\n"
+                                        f"- Status marked as **Cancelled** in Google Sheets\n"
+                                        f"- Calendar Event ID removed and event deleted from Google Calendar\n"
+                                        f"- WhatsApp cancellation notification sent to `{c_phone}`"
+                                    )
                                     st.rerun()
                                 else:
                                     st.error(f"Failed to cancel booking: {msg}")

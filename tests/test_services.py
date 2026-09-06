@@ -115,7 +115,13 @@ def test_sheets_service_lifecycle():
     assert cancel_ok is True
     assert gcal_id == "evt_test_123"
 
-    # 6. Slot should now be available again
+    # 6. Verify GCal_Event_ID was cleared/deleted in Sheet
+    all_recs = service.get_all_bookings()
+    cancelled_rec = next(r for r in all_recs if r["Date"] == test_date and r["Slot_Time"] == test_slot)
+    assert cancelled_rec["Status"] == "Cancelled"
+    assert cancelled_rec["GCal_Event_ID"] == ""
+
+    # 7. Slot should now be available again
     assert service.is_slot_available(test_date, test_slot) is True
 
 
